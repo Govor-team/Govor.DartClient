@@ -1,0 +1,5 @@
+storePassword=REPLACE_LOCALLY
+keyPassword=REPLACE_LOCALLY
+keyAlias=govor-upload
+# Use an absolute path. On Windows use forward slashes.
+storeFile=C:/private/govor-upload.jks

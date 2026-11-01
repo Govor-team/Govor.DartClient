@@ -1,0 +1,1081 @@
+{
+  "@@locale": "ru",
+  "retryDownload": "Повторить загрузку",
+  "@retryDownload": {
+    "description": "Govor interface: Retry download"
+  },
+  "close": "Закрыть",
+  "@close": {
+    "description": "Govor interface: Close"
+  },
+  "save": "Сохранить",
+  "@save": {
+    "description": "Govor interface: Save"
+  },
+  "couldNotSaveFile": "Не удалось сохранить файл",
+  "@couldNotSaveFile": {
+    "description": "Govor interface: Could not save file"
+  },
+  "previousFile": "Предыдущий файл",
+  "@previousFile": {
+    "description": "Govor interface: Previous file"
+  },
+  "nextFile": "Следующий файл",
+  "@nextFile": {
+    "description": "Govor interface: Next file"
+  },
+  "couldNotOpenVideo": "Не удалось открыть видео",
+  "@couldNotOpenVideo": {
+    "description": "Govor interface: Could not open video"
+  },
+  "govor": "Говор",
+  "@govor": {
+    "description": "Govor interface: Govor"
+  },
+  "restoreYourEncryptedHistory": "Вернём вашу зашифрованную историю",
+  "@restoreYourEncryptedHistory": {
+    "description": "Govor interface: Restore your encrypted history"
+  },
+  "closerTogetherOnEveryScreen": "Ближе друг к другу. На любом экране.",
+  "@closerTogetherOnEveryScreen": {
+    "description": "Govor interface: Closer together. On every screen."
+  },
+  "keyRecovery": "Восстановление ключей",
+  "@keyRecovery": {
+    "description": "Govor interface: Key recovery"
+  },
+  "createAccount": "Создать аккаунт",
+  "@createAccount": {
+    "description": "Govor interface: Create account"
+  },
+  "welcomeBack": "С возвращением",
+  "@welcomeBack": {
+    "description": "Govor interface: Welcome back"
+  },
+  "enterTheRecoveryCodeFromADeviceThatAlready": "Введите резервный код с устройства, на котором уже доступна история.",
+  "@enterTheRecoveryCodeFromADeviceThatAlready": {
+    "description": "Govor interface: Enter the recovery code from a device that already has your history."
+  },
+  "anInvitationIsRequiredToRegister": "Для регистрации понадобится приглашение.",
+  "@anInvitationIsRequiredToRegister": {
+    "description": "Govor interface: An invitation is required to register."
+  },
+  "signInToYourGovorAccount": "Войдите в свой аккаунт Govor.",
+  "@signInToYourGovorAccount": {
+    "description": "Govor interface: Sign in to your Govor account."
+  },
+  "recoveryCode": "Резервный код",
+  "@recoveryCode": {
+    "description": "Govor interface: Recovery code"
+  },
+  "enterTheCompleteRecoveryCode": "Введите полный резервный код",
+  "@enterTheCompleteRecoveryCode": {
+    "description": "Govor interface: Enter the complete recovery code"
+  },
+  "name": "Имя",
+  "@name": {
+    "description": "Govor interface: Name"
+  },
+  "enterYourName": "Введите имя",
+  "@enterYourName": {
+    "description": "Govor interface: Enter your name"
+  },
+  "password": "Пароль",
+  "@password": {
+    "description": "Govor interface: Password"
+  },
+  "showPassword": "Показать пароль",
+  "@showPassword": {
+    "description": "Govor interface: Show password"
+  },
+  "hidePassword": "Скрыть пароль",
+  "@hidePassword": {
+    "description": "Govor interface: Hide password"
+  },
+  "between8And256Characters": "От 8 до 256 символов",
+  "@between8And256Characters": {
+    "description": "Govor interface: Between 8 and 256 characters"
+  },
+  "repeatPassword": "Повторите пароль",
+  "@repeatPassword": {
+    "description": "Govor interface: Repeat password"
+  },
+  "passwordsDoNotMatch": "Пароли не совпадают",
+  "@passwordsDoNotMatch": {
+    "description": "Govor interface: Passwords do not match"
+  },
+  "invitationCode": "Код приглашения",
+  "@invitationCode": {
+    "description": "Govor interface: Invitation code"
+  },
+  "restoreHistory": "Восстановить историю",
+  "@restoreHistory": {
+    "description": "Govor interface: Restore history"
+  },
+  "register": "Зарегистрироваться",
+  "@register": {
+    "description": "Govor interface: Register"
+  },
+  "signIn": "Войти",
+  "@signIn": {
+    "description": "Govor interface: Sign in"
+  },
+  "alreadyHaveAnAccountSignIn": "Уже есть аккаунт? Войти",
+  "@alreadyHaveAnAccountSignIn": {
+    "description": "Govor interface: Already have an account? Sign in"
+  },
+  "noAccountRegister": "Нет аккаунта? Зарегистрироваться",
+  "@noAccountRegister": {
+    "description": "Govor interface: No account? Register"
+  },
+  "reconnectSession": "Повторить подключение сессии",
+  "@reconnectSession": {
+    "description": "Govor interface: Reconnect session"
+  },
+  "exploreTheDemo": "Посмотреть демоверсию",
+  "@exploreTheDemo": {
+    "description": "Govor interface: Explore the demo"
+  },
+  "endToEndEncryptionExperimentalVersion": "Сквозное шифрование • Экспериментальная версия",
+  "@endToEndEncryptionExperimentalVersion": {
+    "description": "Govor interface: End-to-end encryption • Experimental version"
+  },
+  "incoming": "Входящие",
+  "@incoming": {
+    "description": "Govor interface: Incoming"
+  },
+  "pending": "Ожидание",
+  "@pending": {
+    "description": "Govor interface: Pending"
+  },
+  "search": "Поиск",
+  "@search": {
+    "description": "Govor interface: Search"
+  },
+  "usernameOrUserId": "Никнейм или ID пользователя",
+  "@usernameOrUserId": {
+    "description": "Govor interface: Username or user ID"
+  },
+  "pasteIdFromClipboard": "Вставить ID из буфера",
+  "@pasteIdFromClipboard": {
+    "description": "Govor interface: Paste ID from clipboard"
+  },
+  "find": "Найти",
+  "@find": {
+    "description": "Govor interface: Find"
+  },
+  "enterAFriendSNameToSearch": "Введите имя друга, чтобы начать поиск",
+  "@enterAFriendSNameToSearch": {
+    "description": "Govor interface: Enter a friend's name to search"
+  },
+  "nothingFound": "Ничего не найдено",
+  "@nothingFound": {
+    "description": "Govor interface: Nothing found"
+  },
+  "noRequestsYet": "Заявок пока нет",
+  "@noRequestsYet": {
+    "description": "Govor interface: No requests yet"
+  },
+  "openChat": "Открыть чат",
+  "@openChat": {
+    "description": "Govor interface: Open chat"
+  },
+  "addFriend": "Добавить в друзья",
+  "@addFriend": {
+    "description": "Govor interface: Add friend"
+  },
+  "requestSent": "Заявка отправлена.",
+  "@requestSent": {
+    "description": "Govor interface: Request sent."
+  },
+  "user": "Пользователь",
+  "@user": {
+    "description": "Govor interface: User"
+  },
+  "accept": "Принять",
+  "@accept": {
+    "description": "Govor interface: Accept"
+  },
+  "decline": "Отклонить",
+  "@decline": {
+    "description": "Govor interface: Decline"
+  },
+  "requestDeclined": "Заявка отклонена",
+  "@requestDeclined": {
+    "description": "Govor interface: Request declined"
+  },
+  "requestUnavailable": "Заявка недоступна",
+  "@requestUnavailable": {
+    "description": "Govor interface: Request unavailable"
+  },
+  "waitingForAReply": "Ожидаем ответа",
+  "@waitingForAReply": {
+    "description": "Govor interface: Waiting for a reply"
+  },
+  "contacts": "Контакты",
+  "@contacts": {
+    "description": "Govor interface: Contacts"
+  },
+  "back": "Назад",
+  "@back": {
+    "description": "Govor interface: Back"
+  },
+  "cancel": "Отмена",
+  "@cancel": {
+    "description": "Govor interface: Cancel"
+  },
+  "confirm": "Подтвердить",
+  "@confirm": {
+    "description": "Govor interface: Confirm"
+  },
+  "groupsAndChannels": "Группы и каналы",
+  "@groupsAndChannels": {
+    "description": "Govor interface: Groups and channels"
+  },
+  "findACommunity": "Найти сообщество",
+  "@findACommunity": {
+    "description": "Govor interface: Find a community"
+  },
+  "byInvitation": "По приглашению",
+  "@byInvitation": {
+    "description": "Govor interface: By invitation"
+  },
+  "invitationLinkOrCode": "Ссылка или код приглашения",
+  "@invitationLinkOrCode": {
+    "description": "Govor interface: Invitation link or code"
+  },
+  "community": "сообщество",
+  "@community": {
+    "description": "Govor interface: community"
+  },
+  "youWillBeAbleToReadCommunityMessagesAfter": "После вступления вам станут доступны сообщения сообщества.",
+  "@youWillBeAbleToReadCommunityMessagesAfter": {
+    "description": "Govor interface: You will be able to read community messages after joining."
+  },
+  "previewInvitation": "Посмотреть приглашение",
+  "@previewInvitation": {
+    "description": "Govor interface: Preview invitation"
+  },
+  "createAGroupOrChannel": "Создать группу или канал",
+  "@createAGroupOrChannel": {
+    "description": "Govor interface: Create a group or channel"
+  },
+  "channel": "Канал",
+  "@channel": {
+    "description": "Govor interface: Channel"
+  },
+  "group": "Группа",
+  "@group": {
+    "description": "Govor interface: Group"
+  },
+  "join": "Вступить",
+  "@join": {
+    "description": "Govor interface: Join"
+  },
+  "openProfile": "Открыть профиль",
+  "@openProfile": {
+    "description": "Govor interface: Open profile"
+  },
+  "createCommunity": "Создать сообщество",
+  "@createCommunity": {
+    "description": "Govor interface: Create community"
+  },
+  "editProfile": "Изменить профиль",
+  "@editProfile": {
+    "description": "Govor interface: Edit profile"
+  },
+  "title": "Название",
+  "@title": {
+    "description": "Govor interface: Title"
+  },
+  "enterATitle": "Введите название",
+  "@enterATitle": {
+    "description": "Govor interface: Enter a title"
+  },
+  "description": "Описание",
+  "@description": {
+    "description": "Govor interface: Description"
+  },
+  "private": "Приватное",
+  "@private": {
+    "description": "Govor interface: Private"
+  },
+  "joinByInvitation": "Вступление по приглашению",
+  "@joinByInvitation": {
+    "description": "Govor interface: Join by invitation"
+  },
+  "onlyAdministratorsCanPost": "Пишут только администраторы",
+  "@onlyAdministratorsCanPost": {
+    "description": "Govor interface: Only administrators can post"
+  },
+  "communityLabel": "Сообщество",
+  "@communityLabel": {
+    "description": "Govor interface: Community"
+  },
+  "refresh": "Обновить",
+  "@refresh": {
+    "description": "Govor interface: Refresh"
+  },
+  "public": "Публичное",
+  "@public": {
+    "description": "Govor interface: Public"
+  },
+  "leaveThisCommunity": "Выйти из сообщества?",
+  "@leaveThisCommunity": {
+    "description": "Govor interface: Leave this community?"
+  },
+  "youWillLoseAccessToItsHistoryAndNew": "Доступ к истории и новым сообщениям будет закрыт.",
+  "@youWillLoseAccessToItsHistoryAndNew": {
+    "description": "Govor interface: You will lose access to its history and new messages."
+  },
+  "leaveCommunity": "Выйти из сообщества",
+  "@leaveCommunity": {
+    "description": "Govor interface: Leave community"
+  },
+  "invitations": "Приглашения",
+  "@invitations": {
+    "description": "Govor interface: Invitations"
+  },
+  "createALinkFor7Days": "Создать ссылку на 7 дней",
+  "@createALinkFor7Days": {
+    "description": "Govor interface: Create a link for 7 days"
+  },
+  "invitation": "Приглашение",
+  "@invitation": {
+    "description": "Govor interface: Invitation"
+  },
+  "allowedReactions": "Разрешённые реакции",
+  "@allowedReactions": {
+    "description": "Govor interface: Allowed reactions"
+  },
+  "members": "Участники",
+  "@members": {
+    "description": "Govor interface: Members"
+  },
+  "banned": "Заблокированные",
+  "@banned": {
+    "description": "Govor interface: Banned"
+  },
+  "owner": "Владелец",
+  "@owner": {
+    "description": "Govor interface: Owner"
+  },
+  "administrator": "Администратор",
+  "@administrator": {
+    "description": "Govor interface: Administrator"
+  },
+  "member": "Участник",
+  "@member": {
+    "description": "Govor interface: Member"
+  },
+  "memberActions": "Действия с участником",
+  "@memberActions": {
+    "description": "Govor interface: Member actions"
+  },
+  "applyThisAction": "Применить действие?",
+  "@applyThisAction": {
+    "description": "Govor interface: Apply this action?"
+  },
+  "removeAdministrator": "Снять администратора",
+  "@removeAdministrator": {
+    "description": "Govor interface: Remove administrator"
+  },
+  "makeAdministrator": "Назначить администратором",
+  "@makeAdministrator": {
+    "description": "Govor interface: Make administrator"
+  },
+  "transferOwnership": "Передать владение",
+  "@transferOwnership": {
+    "description": "Govor interface: Transfer ownership"
+  },
+  "unban": "Разблокировать",
+  "@unban": {
+    "description": "Govor interface: Unban"
+  },
+  "ban": "Заблокировать",
+  "@ban": {
+    "description": "Govor interface: Ban"
+  },
+  "channelReactions": "Реакции канала",
+  "@channelReactions": {
+    "description": "Govor interface: Channel reactions"
+  },
+  "all": "Все",
+  "@all": {
+    "description": "Govor interface: All"
+  },
+  "none": "Никакие",
+  "@none": {
+    "description": "Govor interface: None"
+  },
+  "selected": "Выбранные",
+  "@selected": {
+    "description": "Govor interface: Selected"
+  },
+  "reply": "Ответить",
+  "@reply": {
+    "description": "Govor interface: Reply"
+  },
+  "copyText": "Копировать текст",
+  "@copyText": {
+    "description": "Govor interface: Copy text"
+  },
+  "forward": "Переслать",
+  "@forward": {
+    "description": "Govor interface: Forward"
+  },
+  "edit": "Редактировать",
+  "@edit": {
+    "description": "Govor interface: Edit"
+  },
+  "select": "Выбрать",
+  "@select": {
+    "description": "Govor interface: Select"
+  },
+  "delete": "Удалить",
+  "@delete": {
+    "description": "Govor interface: Delete"
+  },
+  "allReactions": "Все реакции",
+  "@allReactions": {
+    "description": "Govor interface: All reactions"
+  },
+  "couldNotLoadReactions": "Не удалось загрузить реакции",
+  "@couldNotLoadReactions": {
+    "description": "Govor interface: Could not load reactions"
+  },
+  "retry": "Повторить",
+  "@retry": {
+    "description": "Govor interface: Retry"
+  },
+  "findEmoji": "Найти эмодзи",
+  "@findEmoji": {
+    "description": "Govor interface: Find emoji"
+  },
+  "demoMessagesStayInMemoryNoServerConnection": "Демоверсия • Сообщения остаются в памяти, сервер не подключён",
+  "@demoMessagesStayInMemoryNoServerConnection": {
+    "description": "Govor interface: Demo • Messages stay in memory; no server connection"
+  },
+  "leave": "Выйти",
+  "@leave": {
+    "description": "Govor interface: Leave"
+  },
+  "chats": "Чаты",
+  "@chats": {
+    "description": "Govor interface: Chats"
+  },
+  "friendsAndRequests": "Друзья и заявки",
+  "@friendsAndRequests": {
+    "description": "Govor interface: Friends and requests"
+  },
+  "settings": "Настройки",
+  "@settings": {
+    "description": "Govor interface: Settings"
+  },
+  "profile": "Профиль",
+  "@profile": {
+    "description": "Govor interface: Profile"
+  },
+  "searchConversations": "Поиск разговоров",
+  "@searchConversations": {
+    "description": "Govor interface: Search conversations"
+  },
+  "friends": "Друзья",
+  "@friends": {
+    "description": "Govor interface: Friends"
+  },
+  "groups": "Группы",
+  "@groups": {
+    "description": "Govor interface: Groups"
+  },
+  "findAConversation": "Найти разговор",
+  "@findAConversation": {
+    "description": "Govor interface: Find a conversation"
+  },
+  "clearSearch": "Очистить поиск",
+  "@clearSearch": {
+    "description": "Govor interface: Clear search"
+  },
+  "findOrCreate": "Найти или создать",
+  "@findOrCreate": {
+    "description": "Govor interface: Find or create"
+  },
+  "refreshGroups": "Обновить группы",
+  "@refreshGroups": {
+    "description": "Govor interface: Refresh groups"
+  },
+  "yourConversationsWillAppearHere": "Здесь появятся ваши разговоры",
+  "@yourConversationsWillAppearHere": {
+    "description": "Govor interface: Your conversations will appear here"
+  },
+  "findFriends": "Найти друзей",
+  "@findFriends": {
+    "description": "Govor interface: Find friends"
+  },
+  "reconnecting": "Восстанавливаем соединение…",
+  "@reconnecting": {
+    "description": "Govor interface: Reconnecting…"
+  },
+  "connecting": "Подключаемся…",
+  "@connecting": {
+    "description": "Govor interface: Connecting…"
+  },
+  "aGoodConversationNstartsHere": "Хороший разговор\nначинается здесь",
+  "@aGoodConversationNstartsHere": {
+    "description": "Govor interface: A good conversation starts here"
+  },
+  "chooseAChatToFeelCloserNprivateStaysPrivate": "Выберите чат, чтобы быть ближе.\nЛичное остаётся личным.",
+  "@chooseAChatToFeelCloserNprivateStaysPrivate": {
+    "description": "Govor interface: Choose a chat to feel closer. Private stays private."
+  },
+  "endToEndEncryption": "Сквозное шифрование",
+  "@endToEndEncryption": {
+    "description": "Govor interface: End-to-end encryption"
+  },
+  "backToChats": "Назад к чатам",
+  "@backToChats": {
+    "description": "Govor interface: Back to chats"
+  },
+  "online": "В сети",
+  "@online": {
+    "description": "Govor interface: Online"
+  },
+  "privateChat": "Личный чат",
+  "@privateChat": {
+    "description": "Govor interface: Private chat"
+  },
+  "copySelected": "Копировать выбранные",
+  "@copySelected": {
+    "description": "Govor interface: Copy selected"
+  },
+  "forwardSelected": "Переслать выбранные",
+  "@forwardSelected": {
+    "description": "Govor interface: Forward selected"
+  },
+  "clearSelection": "Отменить выбор",
+  "@clearSelection": {
+    "description": "Govor interface: Clear selection"
+  },
+  "searchLoadedHistory": "Поиск в загруженной истории",
+  "@searchLoadedHistory": {
+    "description": "Govor interface: Search loaded history"
+  },
+  "chatActions": "Действия с чатом",
+  "@chatActions": {
+    "description": "Govor interface: Chat actions"
+  },
+  "markAsRead": "Пометить как прочитано",
+  "@markAsRead": {
+    "description": "Govor interface: Mark as read"
+  },
+  "refreshHistory": "Обновить историю",
+  "@refreshHistory": {
+    "description": "Govor interface: Refresh history"
+  },
+  "searchLoadedMessages": "Поиск в загруженных сообщениях",
+  "@searchLoadedMessages": {
+    "description": "Govor interface: Search loaded messages"
+  },
+  "closeSearch": "Закрыть поиск",
+  "@closeSearch": {
+    "description": "Govor interface: Close search"
+  },
+  "openingHistory": "Открываем историю…",
+  "@openingHistory": {
+    "description": "Govor interface: Opening history…"
+  },
+  "noMessagesFound": "Сообщений не найдено",
+  "@noMessagesFound": {
+    "description": "Govor interface: No messages found"
+  },
+  "sayHello": "Скажите «Привет» 👋",
+  "@sayHello": {
+    "description": "Govor interface: Say hello 👋"
+  },
+  "loadEarlierMessages": "Загрузить предыдущие",
+  "@loadEarlierMessages": {
+    "description": "Govor interface: Load earlier messages"
+  },
+  "message": "Сообщение",
+  "@message": {
+    "description": "Govor interface: Message"
+  },
+  "cancelReply": "Отменить ответ",
+  "@cancelReply": {
+    "description": "Govor interface: Cancel reply"
+  },
+  "connectToTheServerToAttachFiles": "Вложения доступны при подключении к серверу",
+  "@connectToTheServerToAttachFiles": {
+    "description": "Govor interface: Connect to the server to attach files"
+  },
+  "attachAFileUpTo19Mb": "Прикрепить файл (до 19 МБ)",
+  "@attachAFileUpTo19Mb": {
+    "description": "Govor interface: Attach a file (up to 19 MB)"
+  },
+  "messageLabel": "Сообщение…",
+  "@messageLabel": {
+    "description": "Govor interface: Message…"
+  },
+  "sendCtrlEnter": "Отправить (Ctrl+Enter)",
+  "@sendCtrlEnter": {
+    "description": "Govor interface: Send (Ctrl+Enter)"
+  },
+  "onlyChannelAdministratorsCanPost": "Публикации доступны администраторам канала",
+  "@onlyChannelAdministratorsCanPost": {
+    "description": "Govor interface: Only channel administrators can post"
+  },
+  "replyToAMessage": "Ответ на сообщение",
+  "@replyToAMessage": {
+    "description": "Govor interface: Reply to a message"
+  },
+  "couldNotVerifyOrDecryptThisMessage": "Не удалось проверить или расшифровать сообщение",
+  "@couldNotVerifyOrDecryptThisMessage": {
+    "description": "Govor interface: Could not verify or decrypt this message"
+  },
+  "encryptedMessage": "Зашифрованное сообщение",
+  "@encryptedMessage": {
+    "description": "Govor interface: Encrypted message"
+  },
+  "copy": "Копировать",
+  "@copy": {
+    "description": "Govor interface: Copy"
+  },
+  "messageActions": "Действия с сообщением",
+  "@messageActions": {
+    "description": "Govor interface: Message actions"
+  },
+  "editMessage": "Редактировать сообщение",
+  "@editMessage": {
+    "description": "Govor interface: Edit message"
+  },
+  "deleteMessage": "Удалить сообщение?",
+  "@deleteMessage": {
+    "description": "Govor interface: Delete message?"
+  },
+  "theMessageWillBeDeletedForAllParticipants": "Сообщение будет удалено у всех участников.",
+  "@theMessageWillBeDeletedForAllParticipants": {
+    "description": "Govor interface: The message will be deleted for all participants."
+  },
+  "selectTextMessagesToForward": "Для пересылки выберите текстовые сообщения.",
+  "@selectTextMessagesToForward": {
+    "description": "Govor interface: Select text messages to forward."
+  },
+  "forwardToChat": "Переслать в чат",
+  "@forwardToChat": {
+    "description": "Govor interface: Forward to chat"
+  },
+  "changeAvatar": "Изменить аватар",
+  "@changeAvatar": {
+    "description": "Govor interface: Change avatar"
+  },
+  "tellUsAboutYourself": "Расскажите о себе",
+  "@tellUsAboutYourself": {
+    "description": "Govor interface: Tell us about yourself"
+  },
+  "saving": "Сохраняем…",
+  "@saving": {
+    "description": "Govor interface: Saving…"
+  },
+  "yourDescriptionIsSavedAutomatically": "Описание сохраняется автоматически",
+  "@yourDescriptionIsSavedAutomatically": {
+    "description": "Govor interface: Your description is saved automatically"
+  },
+  "interfaceLanguage": "Язык интерфейса",
+  "@interfaceLanguage": {
+    "description": "Govor interface: Interface language"
+  },
+  "russianLanguage": "Русский",
+  "@russianLanguage": {
+    "description": "Govor interface: Русский"
+  },
+  "systemLanguage": "Как в системе",
+  "@systemLanguage": {
+    "description": "Govor interface: System language"
+  },
+  "couldNotSaveLanguagePleaseTryAgain": "Не удалось сохранить язык. Повторите попытку.",
+  "@couldNotSaveLanguagePleaseTryAgain": {
+    "description": "Govor interface: Could not save language. Please try again."
+  },
+  "appearance": "Оформление",
+  "@appearance": {
+    "description": "Govor interface: Appearance"
+  },
+  "backgroundAndTheme": "Фон и тема",
+  "@backgroundAndTheme": {
+    "description": "Govor interface: Background and theme"
+  },
+  "darkTheme": "Тёмное оформление",
+  "@darkTheme": {
+    "description": "Govor interface: Dark theme"
+  },
+  "activeSessions": "Активные сессии",
+  "@activeSessions": {
+    "description": "Govor interface: Active sessions"
+  },
+  "device": "Устройство",
+  "@device": {
+    "description": "Govor interface: Device"
+  },
+  "currentSession": "Текущая сессия",
+  "@currentSession": {
+    "description": "Govor interface: Current session"
+  },
+  "endSession": "Завершить сессию",
+  "@endSession": {
+    "description": "Govor interface: End session"
+  },
+  "endThisSession": "Завершить сессию?",
+  "@endThisSession": {
+    "description": "Govor interface: End this session?"
+  },
+  "thisDeviceWillStopReceivingNewMessagesAndPush": "Устройство перестанет получать новые сообщения и push-уведомления.",
+  "@thisDeviceWillStopReceivingNewMessagesAndPush": {
+    "description": "Govor interface: This device will stop receiving new messages and push notifications."
+  },
+  "messageSecurity": "Защита переписки",
+  "@messageSecurity": {
+    "description": "Govor interface: Message security"
+  },
+  "e2eeKeysAndHistoryTransfer": "E2EE, ключи и перенос истории",
+  "@e2eeKeysAndHistoryTransfer": {
+    "description": "Govor interface: E2EE, keys and history transfer"
+  },
+  "reactionPacks": "Паки реакций",
+  "@reactionPacks": {
+    "description": "Govor interface: Reaction packs"
+  },
+  "emojiForYourMessages": "Эмодзи для ваших сообщений",
+  "@emojiForYourMessages": {
+    "description": "Govor interface: Emoji for your messages"
+  },
+  "accountId": "ID аккаунта",
+  "@accountId": {
+    "description": "Govor interface: Account ID"
+  },
+  "copyId": "Копировать ID",
+  "@copyId": {
+    "description": "Govor interface: Copy ID"
+  },
+  "signOut": "Выйти из аккаунта",
+  "@signOut": {
+    "description": "Govor interface: Sign out"
+  },
+  "yourEmojiForMessages": "Ваши эмодзи для сообщений",
+  "@yourEmojiForMessages": {
+    "description": "Govor interface: Your emoji for messages"
+  },
+  "myPacks": "Мои паки",
+  "@myPacks": {
+    "description": "Govor interface: My packs"
+  },
+  "catalog": "Каталог",
+  "@catalog": {
+    "description": "Govor interface: Catalog"
+  },
+  "findAPack": "Найти пак",
+  "@findAPack": {
+    "description": "Govor interface: Find a pack"
+  },
+  "addByCode": "Добавить по коду",
+  "@addByCode": {
+    "description": "Govor interface: Add by code"
+  },
+  "sharedPackCode": "Код общего пака",
+  "@sharedPackCode": {
+    "description": "Govor interface: Shared pack code"
+  },
+  "open": "Открыть",
+  "@open": {
+    "description": "Govor interface: Open"
+  },
+  "alwaysAvailable": "Всегда доступен",
+  "@alwaysAvailable": {
+    "description": "Govor interface: Always available"
+  },
+  "installed": "Установлен",
+  "@installed": {
+    "description": "Govor interface: Installed"
+  },
+  "copyPackCode": "Копировать код пака",
+  "@copyPackCode": {
+    "description": "Govor interface: Copy pack code"
+  },
+  "removeFromMyPacks": "Удалить из моих паков",
+  "@removeFromMyPacks": {
+    "description": "Govor interface: Remove from my packs"
+  },
+  "install": "Установить",
+  "@install": {
+    "description": "Govor interface: Install"
+  },
+  "endToEndEncryptionE2Ee": "Сквозное шифрование · E2EE",
+  "@endToEndEncryptionE2Ee": {
+    "description": "Govor interface: End-to-end encryption · E2EE"
+  },
+  "accountKey": "Ключ аккаунта",
+  "@accountKey": {
+    "description": "Govor interface: Account key"
+  },
+  "compareThePublicFingerprintWithYourContactOverA": "Сверьте публичный отпечаток с собеседником по доверенному каналу.",
+  "@compareThePublicFingerprintWithYourContactOverA": {
+    "description": "Govor interface: Compare the public fingerprint with your contact over a trusted channel."
+  },
+  "viewFingerprint": "Посмотреть отпечаток",
+  "@viewFingerprint": {
+    "description": "Govor interface: View fingerprint"
+  },
+  "historyAndDevices": "История и устройства",
+  "@historyAndDevices": {
+    "description": "Govor interface: History and devices"
+  },
+  "signingInWithYourPasswordUsuallyRestoresHistoryA": "Обычно история переносится при входе по паролю. Резервный код пригодится для восстановления доступа.",
+  "@signingInWithYourPasswordUsuallyRestoresHistoryA": {
+    "description": "Govor interface: Signing in with your password usually restores history. A recovery code helps you recover access."
+  },
+  "historyTransferRecoveryCode": "Перенос истории / резервный код",
+  "@historyTransferRecoveryCode": {
+    "description": "Govor interface: History transfer / recovery code"
+  },
+  "syncHistory": "Синхронизировать историю",
+  "@syncHistory": {
+    "description": "Govor interface: Sync history"
+  },
+  "passwordChangedHistoryPreserved": "Пароль изменён, история сохранена.",
+  "@passwordChangedHistoryPreserved": {
+    "description": "Govor interface: Password changed; history preserved."
+  },
+  "changePassword": "Сменить пароль",
+  "@changePassword": {
+    "description": "Govor interface: Change password"
+  },
+  "changingYourPasswordPreservesHistoryAndEndsOtherSessions": "При смене пароля история сохраняется, остальные сессии завершаются.",
+  "@changingYourPasswordPreservesHistoryAndEndsOtherSessions": {
+    "description": "Govor interface: Changing your password preserves history and ends other sessions."
+  },
+  "newKeys": "Новые ключи",
+  "@newKeys": {
+    "description": "Govor interface: New keys"
+  },
+  "useOnlyIfAllRecoveryMethodsAreLostOld": "Только если все способы восстановления потеряны. Старая зашифрованная история на этом устройстве станет недоступна.",
+  "@useOnlyIfAllRecoveryMethodsAreLostOld": {
+    "description": "Govor interface: Use only if all recovery methods are lost. Old encrypted history will become unavailable on this device."
+  },
+  "startWithNewKeys": "Начать с новыми ключами?",
+  "@startWithNewKeys": {
+    "description": "Govor interface: Start with new keys?"
+  },
+  "oldHistoryCannotBeRestoredOtherSessionsWillEnd": "Старая история не восстановится. Остальные сессии будут завершены. Сохраните резервный код, если он ещё доступен.",
+  "@oldHistoryCannotBeRestoredOtherSessionsWillEnd": {
+    "description": "Govor interface: Old history cannot be restored. Other sessions will end. Save your recovery code if you still have it."
+  },
+  "newKeysCreatedSaveTheNewRecoveryCode": "Созданы новые ключи. Сохраните новый резервный код.",
+  "@newKeysCreatedSaveTheNewRecoveryCode": {
+    "description": "Govor interface: New keys created. Save the new recovery code."
+  },
+  "startChattingWithNewKeys": "Начать общение с новыми ключами",
+  "@startChattingWithNewKeys": {
+    "description": "Govor interface: Start chatting with new keys"
+  },
+  "initialKeyTrustAndGroupMembershipRelyOnThe": "Первая встреча с ключом и состав групп доверяют серверу. Протокол не предоставляет forward secrecy и post-compromise security.",
+  "@initialKeyTrustAndGroupMembershipRelyOnThe": {
+    "description": "Govor interface: Initial key trust and group membership rely on the server. This protocol does not provide forward secrecy or post-compromise security."
+  },
+  "confirmYourCurrentPassword": "Подтвердите текущий пароль",
+  "@confirmYourCurrentPassword": {
+    "description": "Govor interface: Confirm your current password"
+  },
+  "currentPassword": "Текущий пароль",
+  "@currentPassword": {
+    "description": "Govor interface: Current password"
+  },
+  "enterYourCurrentPassword": "Введите текущий пароль",
+  "@enterYourCurrentPassword": {
+    "description": "Govor interface: Enter your current password"
+  },
+  "newPassword": "Новый пароль",
+  "@newPassword": {
+    "description": "Govor interface: New password"
+  },
+  "chooseADifferentPassword": "Выберите другой пароль",
+  "@chooseADifferentPassword": {
+    "description": "Govor interface: Choose a different password"
+  },
+  "repeatNewPassword": "Повторите новый пароль",
+  "@repeatNewPassword": {
+    "description": "Govor interface: Repeat new password"
+  },
+  "continueAction": "Продолжить",
+  "@continueAction": {
+    "description": "Govor interface: Continue"
+  },
+  "tricolor": "Триколор",
+  "@tricolor": {
+    "description": "Govor interface: Tricolor"
+  },
+  "journey": "Путешествие",
+  "@journey": {
+    "description": "Govor interface: Journey"
+  },
+  "vedas": "Веды",
+  "@vedas": {
+    "description": "Govor interface: Vedas"
+  },
+  "rod": "Род",
+  "@rod": {
+    "description": "Govor interface: Rod"
+  },
+  "aria": "Ария",
+  "@aria": {
+    "description": "Govor interface: Aria"
+  },
+  "addABackground": "Добавить свой фон",
+  "@addABackground": {
+    "description": "Govor interface: Add a background"
+  },
+  "customBackground": "Свой фон",
+  "@customBackground": {
+    "description": "Govor interface: Custom background"
+  },
+  "chooseAppearance": "Выберите оформление",
+  "@chooseAppearance": {
+    "description": "Govor interface: Choose appearance"
+  },
+  "validUsername": "4–44 символа: кириллица и цифры, первая — буква",
+  "selectedCount": "Выбрано: {count}",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionOpened": "Открыта {date}",
+  "@sessionOpened": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "wallpaperName": "Фон: {name}",
+  "@wallpaperName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteWallpaperName": "Удалить фон {name}",
+  "@deleteWallpaperName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "joinCommunityName": "Вступить в {name}?",
+  "@joinCommunityName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "editedTime": "изменено • {time}",
+  "@editedTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "removeReaction": "Убрать реакцию",
+  "closeNotice": "Закрыть уведомление",
+  "invitationLength": "Код из 32 символов",
+  "gradient": "Градиент",
+  "openConversation": "Открыть переписку",
+  "copyLink": "Копировать ссылку",
+  "revokeInvitation": "Отозвать приглашение",
+  "pendingAcknowledgment": "Нет подтверждения. Повтор использует прежний ID.",
+  "communitySummary": "{count} участников • {kind}",
+  "@communitySummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "invitationUsed": "Использовано: {count}",
+  "@invitationUsed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "changeMemberRights": "Изменить права пользователя {name}?",
+  "@changeMemberRights": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotOpenLink": "Не удалось открыть ссылку",
+  "markdownImage": "Изображение по ссылке",
+  "offline": "Не в сети",
+  "about": "О себе",
+  "sendFriendRequest": "Отправить заявку в друзья",
+  "couldNotLoadProfile": "Не удалось обновить профиль. Повторите попытку.",
+  "couldNotOpenChat": "Не удалось открыть переписку",
+  "preview": "Предпросмотр",
+  "forwarded": "[Переслано]",
+  "couldNotApplyReaction": "Не удалось изменить реакцию. Повторите выбор.",
+  "messageDeleted": "Сообщение удалено",
+  "removeFriend": "Удалить из друзей",
+  "blockUser": "Заблокировать",
+  "unblockUser": "Разблокировать",
+  "profileTag": "Профильный тег",
+  "userPrivileges": "Привилегии пользователя",
+  "resetTag": "Сбросить тег",
+  "invalidTag": "Проверьте параметры оформления",
+  "tagPermissionRequired": "Для настройки тега нужны Govor+ или соответствующее право.",
+  "tagText": "Текст",
+  "tagTextColor": "Цвет текста",
+  "tagTextGradient": "Градиент текста — конечный цвет",
+  "tagBackground": "Цвет фона",
+  "tagBackgroundGradient": "Градиент фона — конечный цвет",
+  "tagAngle": "Угол градиента (0–360°)",
+  "tagBorder": "Цвет обводки",
+  "tagBorderGradient": "Градиент обводки — конечный цвет",
+  "tagBorderWidth": "Толщина обводки (0–4)",
+  "tagShadow": "Цвет тени",
+  "tagShadowBlur": "Размытие тени (0–20)",
+  "tagShadowX": "Смещение тени X (−10–10)",
+  "tagShadowY": "Смещение тени Y (−10–10)",
+  "tagFont": "Шрифт",
+  "tagFontWeight": "Насыщенность шрифта (100–900, шаг 100)",
+  "tagFontSize": "Размер шрифта (10–24)",
+  "fontSize": "Размер текста",
+  "fontSizePreview": "Так будут выглядеть сообщения",
+  "resetFontSize": "Стандартный размер",
+  "fontSizeSaveFailed": "Не удалось сохранить размер текста. Повторите выбор.",
+  "avatar": "Аватарка",
+  "viewAvatar": "Посмотреть аватарку",
+  "downloadAvatar": "Скачать аватарку",
+  "avatarUnavailable": "Не удалось загрузить аватарку.",
+  "createInvitation": "Создать приглашение",
+  "invitationDays": "Срок действия, дней",
+  "invalidInvitationDays": "Введите от 1 до 365 дней",
+  "invitationLimit": "Лимит вступлений",
+  "invitationUnlimitedHint": "0 — без лимита, максимум 1 000 000",
+  "invalidInvitationLimit": "Введите число от 0 до 1 000 000",
+  "invitationDescription": "Описание ссылки",
+  "couldNotCreateInvitation": "Не удалось создать ссылку. Проверьте соединение и права доступа.",
+  "removeAvatar": "Удалить аватарку",
+  "groupAvatarHint": "PNG, JPEG или WebP · до 2 МиБ · до 2048 px",
+  "unlimitedInvitations": "Без лимита"
+}

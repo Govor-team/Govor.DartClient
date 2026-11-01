@@ -1,0 +1,71 @@
+name: Flutter client
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+defaults:
+  run:
+    working-directory: govor_mobile
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.6'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - run: flutter analyze
+      - run: flutter test --coverage --reporter expanded
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flutter-coverage
+          path: govor_mobile/coverage/lcov.info
+          if-no-files-found: error
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: windows
+            arguments: --release
+            artifact: govor_mobile/build/windows/x64/runner/Release/
+          - os: ubuntu-latest
+            target: linux
+            arguments: --release
+            artifact: govor_mobile/build/linux/x64/release/bundle/
+          - os: ubuntu-latest
+            target: web
+            arguments: --release --no-web-resources-cdn --pwa-strategy=none
+            artifact: govor_mobile/build/web/
+          - os: ubuntu-latest
+            target: apk
+            arguments: --debug
+            artifact: govor_mobile/build/app/outputs/flutter-apk/app-debug.apk
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - if: matrix.target == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libsecret-1-dev libjsoncpp-dev
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.6'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter build ${{ matrix.target }} ${{ matrix.arguments }} --dart-define-from-file=config/production.json --no-pub
+      - uses: actions/upload-artifact@v4
+        with:
+          name: govor-${{ matrix.target }}
+          path: ${{ matrix.artifact }}
+          if-no-files-found: error

@@ -1,0 +1,4 @@
+{
+  "GOVOR_SERVER": "http://localhost:7155",
+  "GOVOR_ALLOW_LOCAL_HTTP": true
+}

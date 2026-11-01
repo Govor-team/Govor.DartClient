@@ -1,0 +1,12 @@
+# Local editor settings and credentials
+.idea/
+.vscode/
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+
+# Local documentation archive; extracted docs are tracked
+/govor_mobile/docs.zip
