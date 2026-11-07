@@ -3,7 +3,7 @@ using System.Text.Json;
 using Govor.Application.Authentication;
 using Govor.Application.E2ee;
 using SecureRemotePassword;
-
+  
 // ONLY public test material. Never use these fixture keys in a real account.
 var options = new JsonSerializerOptions { WriteIndented = true };
 if (args.Length == 2 && args[0] == "verify")

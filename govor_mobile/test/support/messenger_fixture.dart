@@ -5,6 +5,7 @@ import 'package:govor_mobile/core/api_client.dart';
 import 'package:govor_mobile/core/app_dependencies.dart';
 import 'package:govor_mobile/core/auth_service.dart';
 import 'package:govor_mobile/core/chat_hub.dart';
+import 'package:govor_mobile/core/chat_pins.dart';
 import 'package:govor_mobile/core/crypto/primitives.dart';
 import 'package:govor_mobile/core/encryption_service.dart';
 import 'package:govor_mobile/core/models.dart';
@@ -175,7 +176,7 @@ class FlowFixture {
             ];
           default:
             if (request.url.path.endsWith('/unread-count')) {
-              response = {'unreadCount': 2};
+              response = {'unreadCount': 2, 'lastMessageAt': null};
             } else if (request.url.path.endsWith('/read') ||
                 request.method == 'DELETE') {
               return http.Response('', 204);
@@ -199,6 +200,10 @@ class FlowFixture {
         auth: FlowAuth.new,
         encryption: (_) => encryption,
         hub: (api, path) => hubs.putIfAbsent(path, () => FlowHub(api, path)),
+        chatPins: ChatPinsRepository(
+          read: (key) async => localPins[key],
+          write: (key, value) async => localPins[key] = value,
+        ),
         preferences: LocalPreferencesRepository(
           read: () async => null,
           write: (_) async {},
@@ -207,6 +212,7 @@ class FlowFixture {
     );
   }
   final store = MemorySecretStore();
+  final localPins = <String, String>{};
   late final ApiClient api;
   late final FlowEncryption encryption;
   late final MessengerController controller;

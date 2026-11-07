@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../core/api_client.dart';
 import '../core/auth_service.dart';
 import '../core/api_pagination.dart';
+import '../core/chat_pins.dart';
 import '../core/app_dependencies.dart';
 import '../core/media/attachment_repository.dart';
 import 'settings/settings_cubit.dart';
@@ -114,6 +115,84 @@ class MessengerController extends ChangeNotifier {
   final Map<String, PendingSend> _pending = {};
   final Map<String, String> drafts = {};
   final Map<String, int> unread = {};
+  final _activity = <String, DateTime>{};
+  final _legacyActivity = <String>{};
+  final _activityChanges = <String, int>{};
+  int _activityVersion = 0;
+  final _pinned = <String>{};
+  Future<void> _pinWrites = Future.value();
+  String? historyAnchorId;
+  bool hasNewer = false;
+  final _autoReadBoundary = <String, (DateTime, String)>{};
+  final _reading = <String>{};
+  final _readChanges = <String, int>{};
+  int _readVersion = 0;
+
+  bool isPinned(Conversation chat) => _pinned.contains(chat.key);
+  String get _pinScope => '${api!.server.scope}/$userId';
+
+  List<Conversation> get orderedConversations =>
+      [...conversations]..sort((a, b) {
+        final pinned = (isPinned(b) ? 1 : 0).compareTo(isPinned(a) ? 1 : 0);
+        if (pinned != 0) return pinned;
+        final date = (_activity[b.key]?.millisecondsSinceEpoch ?? -1).compareTo(
+          _activity[a.key]?.millisecondsSinceEpoch ?? -1,
+        );
+        if (date != 0) return date;
+        final title = a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        return title != 0 ? title : a.key.compareTo(b.key);
+      });
+
+  Future<void> togglePin(Conversation chat) {
+    final generation = _generation;
+    final task = _pinWrites.then((_) async {
+      if (generation != _generation ||
+          !conversations.any((c) => c.key == chat.key)) {
+        return;
+      }
+      final pins = {..._pinned};
+      if (!pins.remove(chat.key)) {
+        if (pins.length >= ChatPinsRepository.maxPins) {
+          throw const ApiFailure(0, 'Достигнут лимит закреплённых чатов.');
+        }
+        pins.add(chat.key);
+      }
+      if (!demo) await dependencies.chatPins.save(_pinScope, pins);
+      if (generation != _generation) return;
+      _pinned
+        ..clear()
+        ..addAll(pins);
+      _notify();
+    });
+    _pinWrites = task.then<void>((_) {}, onError: (Object _, StackTrace _) {});
+    return task;
+  }
+
+  void _setActivity(String key, DateTime? date, {bool newestOnly = false}) {
+    if (date == null) {
+      if (!newestOnly) _activity.remove(key);
+    } else if (!newestOnly || _activity[key]?.isAfter(date) != true) {
+      _activity[key] = date;
+    }
+  }
+
+  void _recordActivity(String key, DateTime date) {
+    _activityChanges[key] = ++_activityVersion;
+    _setActivity(key, date, newestOnly: true);
+  }
+
+  void _clearChatPreferences() {
+    historyAnchorId = null;
+    hasNewer = false;
+    _activity.clear();
+    _activityChanges.clear();
+    _legacyActivity.clear();
+    _pinned.clear();
+    _autoReadBoundary.clear();
+    _reading.clear();
+    _readChanges.clear();
+  }
+
   final Map<String, List<Json>> attachments = {};
   List<Json> get selectedAttachments =>
       selected == null ? [] : attachments[selected!.key] ?? [];
@@ -337,7 +416,18 @@ class MessengerController extends ChangeNotifier {
       me!.id == api!.tokens!.user,
       'Профиль не совпадает с сессией.',
     );
+    if (generation != _generation) return;
+    _clearChatPreferences();
+    try {
+      final pins = await dependencies.chatPins.load(_pinScope);
+      if (generation != _generation) return;
+      _pinned.addAll(pins);
+    } catch (_) {
+      // Local pins must not prevent sign-in.
+    }
+    if (generation != _generation) return;
     await _disconnect();
+    if (generation != _generation) return;
     hub = dependencies.createHub(api!, '/hubs/chats')
       ..onStatus = (status) {
         if (generation == _generation) {
@@ -345,7 +435,9 @@ class MessengerController extends ChangeNotifier {
           _notify();
         }
       }
-      ..onEvent = _onEvent
+      ..onEvent = (event, args) {
+        if (generation == _generation) _onEvent(event, args);
+      }
       ..onReconnected = refresh;
     friendsHub = dependencies.createHub(api!, '/hubs/friends')
       ..onEvent = (_, _) {
@@ -394,7 +486,7 @@ class MessengerController extends ChangeNotifier {
     _notify();
   }
 
-  Future<void> _loadConversations() async {
+  Future<void> _loadConversations({bool reconcileActivity = true}) async {
     if (demo) return;
     final generation = _generation;
     final response = await Future.wait([
@@ -455,15 +547,56 @@ class MessengerController extends ChangeNotifier {
     for (var i = 0; i < conversations.length; i += 8) {
       await Future.wait(
         conversations.skip(i).take(8).map((c) async {
-          final value = object(
-            await api!.request(
-              'GET',
-              '/api/chats/${c.id}/unread-count',
-              query: {'recipientType': '${c.type}'},
-            ),
-          );
-          if (generation == _generation) {
-            unread[c.key] = value['unreadCount'] as int;
+          final activityVersion = _activityChanges[c.key];
+          final readVersion = _readChanges[c.key];
+          try {
+            final value = object(
+              await api!.request(
+                'GET',
+                '/api/chats/${c.id}/unread-count',
+                query: {
+                  'recipientType': '${c.type}',
+                  'includeActivity': 'true',
+                },
+              ),
+            );
+            if (generation != _generation) return;
+            if (_readChanges[c.key] == readVersion &&
+                value['unreadCount'] is int) {
+              unread[c.key] = value['unreadCount'] as int;
+            }
+            DateTime? date;
+            if (value.containsKey('lastMessageAt')) {
+              date = DateTime.tryParse(value['lastMessageAt'] as String? ?? '');
+            } else if (reconcileActivity || !_legacyActivity.contains(c.key)) {
+              // Compatibility with servers that don't return activity metadata.
+              final route = c.type == 0
+                  ? '/api/user/${c.id}/messages'
+                  : '/api/groups/${c.id}/messages';
+              final tail = objects(
+                await api!.request(
+                  'GET',
+                  route,
+                  query: {'Before': '1', 'After': '0'},
+                ),
+              );
+              if (generation != _generation) return;
+              final item = tail.lastOrNull;
+              if (item != null &&
+                  (item['recipientId'] != c.id ||
+                      item['recipientType'] != c.type)) {
+                return;
+              }
+              date = DateTime.tryParse(item?['sentAt'] as String? ?? '');
+              _legacyActivity.add(c.key);
+            } else {
+              return;
+            }
+            if (_activityChanges[c.key] == activityVersion) {
+              _setActivity(c.key, date);
+            }
+          } catch (_) {
+            // A single missing or inaccessible chat cannot break the list.
           }
         }),
       );
@@ -506,7 +639,20 @@ class MessengerController extends ChangeNotifier {
         applyReactions(payload);
         return;
       }
+      if (event == 'ChatRead' && payload['readerId'] == userId) {
+        final key = '${payload['recipientType']}/${payload['chatId']}';
+        final count = payload['unreadCount'];
+        if (!_reading.contains(key) && count is int) {
+          _readChanges[key] = ++_readVersion;
+          unread[key] = count;
+          _notify();
+        }
+        return;
+      }
       if (event == 'MessageRemoved') {
+        final key = '${payload['recipientType']}/${payload['recipientId']}';
+        _legacyActivity.remove(key);
+        _activityChanges[key] = ++_activityVersion;
         replyRevision++;
         final id = payload['messageId'];
         for (final key in _cache.keys.toList()) {
@@ -517,6 +663,11 @@ class MessengerController extends ChangeNotifier {
       }
       if (event == 'ReceiveMessage' || event == 'MessageSent') {
         final key = '${payload['recipientType']}/${payload['recipientId']}';
+        final date = DateTime.tryParse(payload['sentAt'] as String? ?? '');
+        if (date != null) {
+          _recordActivity(key, date);
+          _notify();
+        }
         _acknowledge(key, payload['messageId'] as String);
       }
     }
@@ -527,11 +678,11 @@ class MessengerController extends ChangeNotifier {
     _events?.cancel();
     _events = Timer(
       const Duration(milliseconds: 200),
-      () => unawaited(refresh()),
+      () => unawaited(refresh(reconcileActivity: false)),
     );
   }
 
-  Future<void> refresh() async {
+  Future<void> refresh({bool reconcileActivity = true}) async {
     if (demo || !ready) return;
     if (_refreshing) {
       _refreshAgain = true;
@@ -542,8 +693,11 @@ class MessengerController extends ChangeNotifier {
     try {
       do {
         _refreshAgain = false;
-        await _loadConversations();
-        if (selected != null) await _loadMessages(selected!, fresh: true);
+        await _loadConversations(reconcileActivity: reconcileActivity);
+        if (generation != _generation) return;
+        if (selected != null && !hasNewer && !loadingMessages) {
+          await _loadMessages(selected!, fresh: true);
+        }
       } while (_refreshAgain && generation == _generation);
     } catch (e) {
       if (generation == _generation) {
@@ -557,15 +711,63 @@ class MessengerController extends ChangeNotifier {
 
   Future<void> open(Conversation chat) async {
     selected = chat;
-    _selection++;
+    _autoReadBoundary.remove(chat.key);
+    final selection = ++_selection, generation = _generation;
+    historyAnchorId = null;
+    hasNewer = false;
     error = null;
-    messages = _cache[chat.key] ?? [];
+    loadingMessages = !demo;
+    messages = demo ? _cache[chat.key] ?? [] : [];
     hasOlder = true;
     _notify();
-    if (!demo) {
-      try {
-        await _loadMessages(chat, fresh: true);
-      } catch (e) {
+    if (demo) return;
+    try {
+      String? anchor;
+      var anchorWasRead = false;
+      var inferPosition = false;
+      if ((unread[chat.key] ?? 0) > 0) {
+        try {
+          final activity = object(
+            await api!.request(
+              'GET',
+              '/api/chats/${chat.id}/unread-count',
+              query: {
+                'recipientType': '${chat.type}',
+                'includeActivity': 'true',
+                'includeReadPosition': 'true',
+              },
+            ),
+          );
+          if (generation != _generation || selection != _selection) return;
+          final count = activity['unreadCount'];
+          if (count is int) unread[chat.key] = count;
+          if ((unread[chat.key] ?? 0) > 0) {
+            final lastRead = activity['lastReadMessageId'];
+            final firstUnread = activity['firstUnreadMessageId'];
+            if (validId(lastRead)) {
+              anchor = lastRead as String;
+              anchorWasRead = true;
+            } else if (validId(firstUnread)) {
+              anchor = firstUnread as String;
+            } else {
+              inferPosition = true;
+            }
+          }
+        } catch (_) {
+          inferPosition = true;
+        }
+      }
+      if (generation != _generation || selection != _selection) return;
+      await _loadMessages(
+        chat,
+        fresh: true,
+        initial: true,
+        anchor: anchor,
+        anchorWasRead: anchorWasRead,
+        inferPosition: inferPosition,
+      );
+    } catch (e) {
+      if (generation == _generation && selection == _selection) {
         error = safeError(e);
         _notify();
       }
@@ -575,27 +777,68 @@ class MessengerController extends ChangeNotifier {
   void closeChat() {
     selected = null;
     messages = [];
+    historyAnchorId = null;
+    hasNewer = false;
+    loadingMessages = false;
     _selection++;
     _notify();
   }
 
-  Future<void> _loadMessages(Conversation chat, {required bool fresh}) async {
+  Future<void> _loadMessages(
+    Conversation chat, {
+    required bool fresh,
+    bool initial = false,
+    String? anchor,
+    bool anchorWasRead = false,
+    bool inferPosition = false,
+    bool newer = false,
+  }) async {
     final selection = _selection, generation = _generation;
+    final activityVersion = _activityChanges[chat.key];
     loadingMessages = true;
     _notify();
     try {
       final previous = _cache[chat.key] ?? [];
-      final query = {'Before': '40', 'After': '0'};
-      if (!fresh && previous.isNotEmpty) {
-        query['StartMessageId'] = previous.first.id;
+      final query = {
+        'Before': newer ? '0' : '40',
+        'After': anchor != null || newer ? '40' : '0',
+      };
+      if (anchor != null) {
+        query['StartMessageId'] = anchor;
+      } else if (!fresh && previous.isNotEmpty) {
+        query['StartMessageId'] = newer ? previous.last.id : previous.first.id;
       }
       final route = chat.type == 0
           ? '/api/user/${chat.id}/messages'
           : '/api/groups/${chat.id}/messages';
-      final raw = objects(await api!.request('GET', route, query: query));
+      var raw = objects(await api!.request('GET', route, query: query));
+      if (anchor != null && raw.isEmpty && generation == _generation) {
+        // The anchor may have been deleted between the two requests.
+        anchor = null;
+        inferPosition = true;
+        raw = objects(
+          await api!.request(
+            'GET',
+            route,
+            query: {'Before': '40', 'After': '0'},
+          ),
+        );
+      }
+      if (newer &&
+          raw.isEmpty &&
+          generation == _generation &&
+          selection == _selection) {
+        await _loadMessages(
+          chat,
+          fresh: true,
+          initial: true,
+          inferPosition: true,
+        );
+        return;
+      }
       final decoded = <ChatMessage>[];
       for (final value in raw) {
-        if (generation != _generation) return;
+        if (generation != _generation || selection != _selection) return;
         final m = ChatMessage.fromJson(value);
         applyHistoryReactions(value);
         requireCrypto(
@@ -608,9 +851,11 @@ class MessengerController extends ChangeNotifier {
           decoded.add(m.rejected(safeError(e)));
         }
       }
-      if (generation != _generation) return;
+      if (generation != _generation || selection != _selection) return;
       // A refreshed snapshot replaces the tail, including messages deleted while offline.
-      final retained = fresh
+      final retained = initial
+          ? const <ChatMessage>[]
+          : fresh
           ? previous.where(
               (m) =>
                   decoded.isNotEmpty &&
@@ -620,12 +865,50 @@ class MessengerController extends ChangeNotifier {
             )
           : previous;
       _cache[chat.key] = mergeMessages(retained, decoded);
+      if (fresh &&
+          anchor == null &&
+          _activityChanges[chat.key] == activityVersion) {
+        _setActivity(chat.key, decoded.lastOrNull?.sentAt);
+      }
       for (final m in decoded) {
         _acknowledge(chat.key, m.id);
       }
       if (selection == _selection && selected?.key == chat.key) {
         messages = _cache[chat.key]!;
-        if (!fresh || previous.isEmpty) hasOlder = raw.length >= 40;
+        if (initial) {
+          final anchorIndex = anchor == null
+              ? -1
+              : decoded.indexWhere((m) => m.id == anchor);
+          historyAnchorId = anchorIndex < 0 ? null : anchor;
+          if (anchorIndex >= 0 && anchorWasRead) {
+            final read = decoded[anchorIndex];
+            _autoReadBoundary[chat.key] = (read.sentAt, read.id);
+          }
+          hasNewer = anchorIndex >= 0 && decoded.length - anchorIndex - 1 >= 40;
+          hasOlder = anchorIndex < 0 ? raw.length >= 40 : anchorIndex >= 40;
+          if (inferPosition && historyAnchorId == null) {
+            final firstUnread = raw.indexWhere(
+              (item) =>
+                  item['senderId'] != userId &&
+                  !(item['messageViews'] is List &&
+                      (item['messageViews'] as List).any(
+                        (v) => v is Map && v['userId'] == userId,
+                      )),
+            );
+            if (firstUnread >= 0) {
+              final marker = decoded[firstUnread == 0 ? 0 : firstUnread - 1];
+              historyAnchorId = marker.id;
+              if (firstUnread > 0) {
+                _autoReadBoundary[chat.key] = (marker.sentAt, marker.id);
+              }
+            }
+          }
+        } else if (newer) {
+          hasNewer =
+              decoded.where((m) => m.id != previous.last.id).length >= 40;
+        } else if (!fresh || previous.isEmpty) {
+          hasOlder = fresh ? raw.length >= 40 : raw.length > 40;
+        }
       }
     } finally {
       if (selection == _selection && generation == _generation) {
@@ -651,6 +934,19 @@ class MessengerController extends ChangeNotifier {
     } catch (e) {
       error = safeError(e);
       _notify();
+    }
+  }
+
+  Future<void> loadNewer() async {
+    final chat = selected;
+    if (chat == null || loadingMessages || !hasNewer || demo) return;
+    try {
+      await _loadMessages(chat, fresh: false, newer: true);
+    } catch (e) {
+      if (selected?.key == chat.key) {
+        error = safeError(e);
+        _notify();
+      }
     }
   }
 
@@ -700,6 +996,7 @@ class MessengerController extends ChangeNotifier {
           attachments: files ?? const [],
         );
         _cache[chat.key] = mergeMessages(_cache[chat.key] ?? [], [m]);
+        _recordActivity(chat.key, m.sentAt);
         if (selected?.key == chat.key) messages = _cache[chat.key]!;
         if (forwardedFrom == null) drafts.remove(chat.key);
         return true;
@@ -779,13 +1076,25 @@ class MessengerController extends ChangeNotifier {
       );
       final decoded = await encryption!.decrypt(response);
       if (generation != _generation) return false;
-      _cache[chat.key] = mergeMessages(_cache[chat.key] ?? [], [decoded]);
+      final jumpToEnd = selected?.key == chat.key && hasNewer;
+      if (!jumpToEnd) {
+        _cache[chat.key] = mergeMessages(_cache[chat.key] ?? [], [decoded]);
+      }
+      _recordActivity(chat.key, decoded.sentAt);
       _pending.remove(chat.key);
       if (pending.forwardedFrom == null) {
         drafts.remove(chat.key);
         attachments.remove(chat.key);
       }
-      if (selected?.key == chat.key) messages = _cache[chat.key]!;
+      if (jumpToEnd) {
+        try {
+          await _loadMessages(chat, fresh: true, initial: true);
+        } catch (_) {
+          // The send succeeded; keep the reading window if reloading fails.
+        }
+      } else if (selected?.key == chat.key) {
+        messages = _cache[chat.key]!;
+      }
       return true;
     } catch (e) {
       if (generation == _generation) error = safeError(e);
@@ -892,16 +1201,67 @@ class MessengerController extends ChangeNotifier {
 
   Future<void> markRead() async {
     final chat = selected;
-    if (chat == null) return;
-    if (!demo) {
-      await api!.request(
-        'POST',
-        '/api/chats/${chat.id}/read',
-        body: {'recipientType': chat.type},
-      );
+    if (chat != null) await _markRead(chat, null);
+  }
+
+  Future<void> markVisibleHistoryRead(
+    String chatKey,
+    ChatMessage boundary,
+  ) async {
+    final chat = selected;
+    if (chat == null ||
+        chat.key != chatKey ||
+        demo ||
+        loadingMessages ||
+        (unread[chatKey] ?? 0) <= 0 ||
+        _reading.contains(chatKey) ||
+        boundary.failure != null ||
+        !messages.any((m) => m.id == boundary.id)) {
+      return;
     }
-    unread[chat.key] = 0;
-    _notify();
+    final previous = _autoReadBoundary[chatKey];
+    if (previous != null &&
+        (boundary.sentAt.isBefore(previous.$1) ||
+            (boundary.sentAt == previous.$1 &&
+                boundary.id.compareTo(previous.$2) <= 0))) {
+      return;
+    }
+    _autoReadBoundary[chatKey] = (boundary.sentAt, boundary.id);
+    try {
+      await _markRead(chat, boundary.id);
+    } catch (_) {
+      // Background receipts should not interrupt a chat. Reopening retries.
+    }
+  }
+
+  Future<void> _markRead(Conversation chat, String? boundary) async {
+    if (!_reading.add(chat.key)) return;
+    final generation = _generation;
+    try {
+      final result = demo
+          ? null
+          : await api!.request(
+              'POST',
+              '/api/chats/${chat.id}/read',
+              body: {'recipientType': chat.type, 'upToMessageId': ?boundary},
+            );
+      if (generation != _generation) return;
+      final count = result is Map ? result['unreadCount'] : null;
+      _readChanges[chat.key] = ++_readVersion;
+      if (count is int) {
+        unread[chat.key] = count;
+        if (count == 0 && boundary != null && selected?.key == chat.key) {
+          historyAnchorId = null;
+        }
+      } else if (boundary == null) {
+        unread[chat.key] = 0;
+      }
+    } finally {
+      if (generation == _generation) {
+        _reading.remove(chat.key);
+        _notify();
+      }
+    }
   }
 
   Future<List<Person>> searchPeople(String query) async {
@@ -1116,6 +1476,7 @@ class MessengerController extends ChangeNotifier {
     friends = [];
     requests = [];
     unread.clear();
+    _clearChatPreferences();
     _cache.clear();
     _pending.clear();
     drafts.clear();
@@ -1161,6 +1522,7 @@ class MessengerController extends ChangeNotifier {
     drafts.clear();
     attachments.clear();
     unread.clear();
+    _clearChatPreferences();
     requests = [];
     demo = true;
     ready = true;
@@ -1245,6 +1607,9 @@ class MessengerController extends ChangeNotifier {
             'Добро пожаловать в экспериментальный Flutter-клиент Govor. Здесь можно обсудить идеи для всех платформ.',
       ),
     ];
+    for (final entry in _cache.entries) {
+      _setActivity(entry.key, entry.value.lastOrNull?.sentAt);
+    }
     selected = null;
     messages = [];
     connection = ConnectionStatus.offline;

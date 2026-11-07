@@ -34,11 +34,12 @@ class MessengerScreen extends StatefulWidget {
   State<MessengerScreen> createState() => _MessengerScreenState();
 }
 
-class _MessengerScreenState extends State<MessengerScreen> {
+class _MessengerScreenState extends State<MessengerScreen>
+    with WidgetsBindingObserver {
   final _search = TextEditingController(),
       _composer = TextEditingController(),
       _messageSearch = TextEditingController();
-  final _scroll = ScrollController();
+  final _scroll = ScrollController(keepScrollOffset: false);
   final _composerFocus = FocusNode();
   String? _chatKey;
   String? _pendingId;
@@ -49,12 +50,18 @@ class _MessengerScreenState extends State<MessengerScreen> {
   bool _searchingChats = false;
   bool _searchingMessages = false;
   bool _messageActionsOpen = false;
+  bool _readFrameScheduled = false;
+  bool _chatRouteVisible = false;
+  final _viewport = GlobalKey();
+  final _laidOutMessages = <String, (ChatMessage, BuildContext)>{};
   ChatMessage? _reply;
   MessengerController get c => widget.controller;
   @override
   void initState() {
     super.initState();
     _composer.addListener(_saveDraft);
+    _scroll.addListener(_scheduleRead);
+    WidgetsBinding.instance.addObserver(this);
   }
 
   void _saveDraft() {
@@ -63,12 +70,89 @@ class _MessengerScreenState extends State<MessengerScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _search.dispose();
     _composer.dispose();
     _messageSearch.dispose();
     _scroll.dispose();
     _composerFocus.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _scheduleRead();
+  }
+
+  void _scheduleRead() {
+    if (_readFrameScheduled || !_chatRouteVisible) return;
+    _readFrameScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _readFrameScheduled = false;
+      if (!mounted ||
+          !_chatRouteVisible ||
+          (WidgetsBinding.instance.lifecycleState != null &&
+              WidgetsBinding.instance.lifecycleState !=
+                  AppLifecycleState.resumed) ||
+          _searchingMessages ||
+          !_scroll.hasClients) {
+        return;
+      }
+      final chat = c.selected;
+      final viewport = _viewport.currentContext?.findRenderObject();
+      if (chat == null ||
+          c.demo ||
+          c.loadingMessages ||
+          (c.unread[chat.key] ?? 0) <= 0 ||
+          viewport is! RenderBox ||
+          !viewport.attached ||
+          !viewport.hasSize) {
+        return;
+      }
+      ChatMessage? latest;
+      for (final (message, context) in _laidOutMessages.values) {
+        if (!context.mounted ||
+            message.failure != null ||
+            message.conversationId != chat.id ||
+            message.type != chat.type) {
+          continue;
+        }
+        final box = context.findRenderObject();
+        if (box is! RenderBox || !box.attached || !box.hasSize) continue;
+        // Use the bottom of each message so tall messages count only after the
+        // reader has reached their end. Sliver prefetch alone is not visibility.
+        final bottom = box
+            .localToGlobal(Offset(0, box.size.height), ancestor: viewport)
+            .dy;
+        if (!bottom.isFinite ||
+            bottom <= 0 ||
+            bottom > viewport.size.height + 1) {
+          continue;
+        }
+        if (latest == null ||
+            message.sentAt.isAfter(latest.sentAt) ||
+            (message.sentAt == latest.sentAt &&
+                message.id.compareTo(latest.id) > 0)) {
+          latest = message;
+        }
+      }
+      if (latest != null) unawaited(c.markVisibleHistoryRead(chat.key, latest));
+    });
+  }
+
+  String _pinLabel(Conversation chat) =>
+      c.isPinned(chat) ? context.l10n.unpinChat : context.l10n.pinChat;
+
+  Future<void> _chatListMenu(Conversation chat, Offset position) async {
+    final overlay =
+        Overlay.of(context).context.findRenderObject()! as RenderBox;
+    final point = overlay.globalToLocal(position);
+    final pin = await showMenu<bool>(
+      context: context,
+      position: RelativeRect.fromSize(point & Size.zero, overlay.size),
+      items: [PopupMenuItem(value: true, child: Text(_pinLabel(chat)))],
+    );
+    if (pin == true && mounted) await _action(() => c.togglePin(chat));
   }
 
   Future<void> _action(Future<void> Function() action) async {
@@ -105,7 +189,7 @@ class _MessengerScreenState extends State<MessengerScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scroll.hasClients) {
           _scroll.animateTo(
-            _scroll.position.maxScrollExtent,
+            _scroll.position.minScrollExtent,
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOut,
           );
@@ -116,6 +200,8 @@ class _MessengerScreenState extends State<MessengerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _chatRouteVisible = ModalRoute.isCurrentOf(context) ?? true;
+    _scheduleRead();
     if (c.selected?.key != _chatKey) {
       _chatKey = c.selected?.key;
       _reply = null;
@@ -139,9 +225,15 @@ class _MessengerScreenState extends State<MessengerScreen> {
       builder: (context, settings) => LayoutBuilder(
         builder: (context, constraints) {
           final wide = constraints.maxWidth >= 820;
-          final maxSidebar = (constraints.maxWidth - 440).clamp(92.0, 600.0);
-          final sidebarWidth = settings.sidebarWidth.clamp(92.0, maxSidebar);
-          _compact = wide && sidebarWidth < 180;
+          final minSidebar = _homeTab == 0 ? 92.0 : 240.0;
+          final maxSidebar = (constraints.maxWidth - 440).clamp(
+            minSidebar,
+            600.0,
+          );
+          final sidebarWidth = wide
+              ? settings.sidebarWidth.clamp(minSidebar, maxSidebar)
+              : null;
+          _compact = sidebarWidth != null && sidebarWidth < 180;
           return SafeArea(
             child: Padding(
               padding: EdgeInsets.all(wide ? 16 : 8),
@@ -158,14 +250,11 @@ class _MessengerScreenState extends State<MessengerScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         if (wide) ...[_rail(), const SizedBox(width: 12)],
-                        if (wide || c.selected == null)
-                          SizedBox(
-                            width: wide
-                                ? sidebarWidth
-                                : constraints.maxWidth - 16,
-                            child: _home(wide),
-                          ),
-                        if (wide)
+                        if (sidebarWidth != null)
+                          SizedBox(width: sidebarWidth, child: _home(true))
+                        else if (c.selected == null)
+                          Expanded(child: _home(false)),
+                        if (sidebarWidth != null)
                           Semantics(
                             label: context.l10n.resizeSidebar,
                             child: MouseRegion(
@@ -176,7 +265,7 @@ class _MessengerScreenState extends State<MessengerScreen> {
                                 onHorizontalDragUpdate: (details) =>
                                     c.settings.setSidebarWidth(
                                       (sidebarWidth + details.delta.dx).clamp(
-                                        92.0,
+                                        minSidebar,
                                         maxSidebar,
                                       ),
                                     ),
@@ -241,16 +330,12 @@ class _MessengerScreenState extends State<MessengerScreen> {
         children: [
           const BrandMark(size: 42),
           const SizedBox(height: 32),
-          IconButton.filledTonal(
-            tooltip: context.l10n.chats,
-            onPressed: () => setState(() => _homeTab = 0),
-            icon: const Icon(Icons.chat_bubble_outline_rounded),
-          ),
+          _railTab(0, context.l10n.chats, Icons.chat_bubble_outline_rounded),
           const SizedBox(height: 12),
-          IconButton(
-            tooltip: context.l10n.friendsAndRequests,
-            onPressed: () => setState(() => _homeTab = 1),
-            icon: const Icon(Icons.people_outline_rounded),
+          _railTab(
+            1,
+            context.l10n.friendsAndRequests,
+            Icons.people_outline_rounded,
           ),
           const Spacer(),
           IconButton(
@@ -272,6 +357,14 @@ class _MessengerScreenState extends State<MessengerScreen> {
       ),
     ),
   );
+  Widget _railTab(int index, String label, IconData icon) => IconButton(
+    tooltip: label,
+    isSelected: _homeTab == index,
+    color: _homeTab == index ? accent : null,
+    onPressed: () => setState(() => _homeTab = index),
+    icon: Icon(icon),
+  );
+
   Widget _home(bool wide) {
     final body = _compact
         ? _compactChats()
@@ -395,39 +488,55 @@ class _MessengerScreenState extends State<MessengerScreen> {
       Expanded(
         child: ListView(
           children: [
-            for (final chat in c.conversations.where(
+            for (final chat in c.orderedConversations.where(
               (chat) => chat.type == _filter - 1,
             ))
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Tooltip(
-                  message: chat.title,
-                  child: InkWell(
-                    onTap: () => c.open(chat),
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      padding: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color: c.selected?.key == chat.key
-                            ? primary.withValues(alpha: .19)
-                            : null,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Stack(
-                        alignment: Alignment.topRight,
-                        children: [
-                          Center(
-                            child: PreviewAvatar(
-                              chat.title,
-                              controller: c,
-                              imageId: chat.iconId,
-                              size: 48,
-                              online: chat.online,
-                              group: chat.type == 1,
+              Builder(
+                builder: (context) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Tooltip(
+                    message: chat.title,
+                    child: InkWell(
+                      onTap: () => c.open(chat),
+                      onSecondaryTapDown: (d) =>
+                          _chatListMenu(chat, d.globalPosition),
+                      onLongPress: () =>
+                          _chatListMenu(chat, _tilePosition(context)),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: c.selected?.key == chat.key
+                              ? primary.withValues(alpha: .19)
+                              : null,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Stack(
+                          alignment: Alignment.topRight,
+                          children: [
+                            Center(
+                              child: PreviewAvatar(
+                                chat.title,
+                                controller: c,
+                                imageId: chat.iconId,
+                                size: 48,
+                                online: chat.online,
+                                group: chat.type == 1,
+                              ),
                             ),
-                          ),
-                          if ((c.unread[chat.key] ?? 0) > 0) const Badge(),
-                        ],
+                            if ((c.unread[chat.key] ?? 0) > 0) const Badge(),
+                            if (c.isPinned(chat))
+                              const Positioned(
+                                left: 0,
+                                bottom: 0,
+                                child: Icon(
+                                  Icons.push_pin_rounded,
+                                  size: 14,
+                                  color: accent,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -441,7 +550,7 @@ class _MessengerScreenState extends State<MessengerScreen> {
 
   Widget _chatList(bool wide) {
     final query = _search.text.toLowerCase().trim();
-    final chats = c.conversations
+    final chats = c.orderedConversations
         .where(
           (chat) =>
               ((_filter == 1 && chat.type == 0) ||
@@ -591,7 +700,15 @@ class _MessengerScreenState extends State<MessengerScreen> {
     );
   }
 
-  Widget _conversationTile(Conversation chat) {
+  Offset _tilePosition(BuildContext context) {
+    final box = context.findRenderObject()! as RenderBox;
+    return box.localToGlobal(box.size.center(Offset.zero));
+  }
+
+  Widget _conversationTile(Conversation chat) =>
+      Builder(builder: (context) => _buildConversationTile(context, chat));
+
+  Widget _buildConversationTile(BuildContext context, Conversation chat) {
     final active = c.selected?.key == chat.key;
     final unread = c.unread[chat.key] ?? 0;
     return Padding(
@@ -602,6 +719,8 @@ class _MessengerScreenState extends State<MessengerScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(19),
           onTap: () => c.open(chat),
+          onSecondaryTapDown: (d) => _chatListMenu(chat, d.globalPosition),
+          onLongPress: () => _chatListMenu(chat, _tilePosition(context)),
           child: Container(
             padding: const EdgeInsets.all(13),
             decoration: BoxDecoration(
@@ -640,6 +759,15 @@ class _MessengerScreenState extends State<MessengerScreen> {
                               ),
                             ),
                           ),
+                          if (c.isPinned(chat))
+                            Tooltip(
+                              message: context.l10n.pinnedChat,
+                              child: const Icon(
+                                Icons.push_pin_rounded,
+                                size: 14,
+                                color: accent,
+                              ),
+                            ),
                           if (chat.isChannel)
                             const Icon(
                               Icons.campaign_outlined,
@@ -683,6 +811,95 @@ class _MessengerScreenState extends State<MessengerScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _history(
+    Conversation chat,
+    List<ChatMessage> visible, {
+    required bool wide,
+    required bool searching,
+  }) {
+    final anchor = searching
+        ? -1
+        : visible.indexWhere((m) => m.id == c.historyAnchorId);
+    final pivot = anchor < 0 ? visible.length - 1 : anchor;
+    final padding = EdgeInsets.symmetric(horizontal: wide ? 28 : 14);
+    const center = ValueKey('history-pivot');
+    Widget tile(int index) {
+      final message = visible[index];
+      final previous = index > 0 ? visible[index - 1] : null;
+      final local = message.sentAt.toLocal();
+      final dateBreak =
+          previous == null ||
+          DateUtils.dateOnly(previous.sentAt.toLocal()) !=
+              DateUtils.dateOnly(local);
+      return _ReadMarker(
+        key: ValueKey(message.id),
+        message: message,
+        registry: _laidOutMessages,
+        child: Column(
+          children: [
+            if (dateBreak)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 18, top: 4),
+                child: Text(
+                  '${local.day.toString().padLeft(2, '0')}.${local.month.toString().padLeft(2, '0')}.${local.year}',
+                  style: const TextStyle(fontSize: 10, color: muted),
+                ),
+              ),
+            _bubble(message),
+          ],
+        ),
+      );
+    }
+
+    final newer = visible.length - 1 - pivot;
+    final showMore = !searching && c.hasNewer;
+    return SizedBox(
+      key: _viewport,
+      child: CustomScrollView(
+        key: ValueKey((chat.key, searching ? null : c.historyAnchorId)),
+        controller: _scroll,
+        reverse: true,
+        center: center,
+        slivers: [
+          SliverPadding(
+            padding: padding,
+            sliver: SliverList.builder(
+              itemCount: newer + (showMore ? 1 : 0),
+              itemBuilder: (_, index) => index < newer
+                  ? tile(pivot + 1 + index)
+                  : Center(
+                      child: TextButton(
+                        key: const Key('load-newer-messages'),
+                        onPressed: c.loadingMessages ? null : c.loadNewer,
+                        child: Text(context.l10n.loadNewerMessages),
+                      ),
+                    ),
+            ),
+          ),
+          SliverPadding(
+            key: center,
+            padding: padding.add(const EdgeInsets.only(bottom: 18)),
+            sliver: SliverList.builder(
+              itemCount: pivot + 2,
+              itemBuilder: (_, index) => index <= pivot
+                  ? tile(pivot - index)
+                  : Column(
+                      children: [
+                        if (!c.demo && c.hasOlder && !searching)
+                          TextButton(
+                            onPressed: c.loadingMessages ? null : c.loadOlder,
+                            child: Text(context.l10n.loadEarlierMessages),
+                          ),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -834,6 +1051,9 @@ class _MessengerScreenState extends State<MessengerScreen> {
               PopupMenuButton<String>(
                 tooltip: context.l10n.chatActions,
                 onSelected: (value) {
+                  if (value == 'pin') {
+                    _action(() => c.togglePin(chat));
+                  }
                   if (value == 'read') {
                     _action(c.markRead);
                   }
@@ -842,6 +1062,7 @@ class _MessengerScreenState extends State<MessengerScreen> {
                   }
                 },
                 itemBuilder: (_) => [
+                  PopupMenuItem(value: 'pin', child: Text(_pinLabel(chat))),
                   PopupMenuItem(
                     value: 'read',
                     child: Text(context.l10n.markAsRead),
@@ -899,51 +1120,11 @@ class _MessengerScreenState extends State<MessengerScreen> {
                     style: const TextStyle(color: muted),
                   ),
                 )
-              : ListView.builder(
-                  key: ValueKey(chat.key),
-                  controller: _scroll,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: wide ? 28 : 14,
-                    vertical: 18,
-                  ),
-                  itemCount: visible.length + 1,
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return Column(
-                        children: [
-                          if (!c.demo && c.hasOlder && query.isEmpty)
-                            TextButton(
-                              onPressed: c.loadingMessages ? null : c.loadOlder,
-                              child: Text(context.l10n.loadEarlierMessages),
-                            ),
-                          const SizedBox(height: 10),
-                        ],
-                      );
-                    }
-                    final message = visible[index - 1];
-                    final previous = index > 1 ? visible[index - 2] : null;
-                    final local = message.sentAt.toLocal();
-                    final dateBreak =
-                        previous == null ||
-                        DateUtils.dateOnly(previous.sentAt.toLocal()) !=
-                            DateUtils.dateOnly(local);
-                    return Column(
-                      children: [
-                        if (dateBreak)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 18, top: 4),
-                            child: Text(
-                              '${local.day.toString().padLeft(2, '0')}.${local.month.toString().padLeft(2, '0')}.${local.year}',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: muted,
-                              ),
-                            ),
-                          ),
-                        _bubble(message),
-                      ],
-                    );
-                  },
+              : _history(
+                  chat,
+                  visible,
+                  wide: wide,
+                  searching: query.isNotEmpty,
                 ),
         ),
         if (c.pending != null)
@@ -1220,7 +1401,9 @@ class _MessengerScreenState extends State<MessengerScreen> {
           height: 360,
           child: ListView(
             children: [
-              for (final chat in c.conversations.where((chat) => chat.canPost))
+              for (final chat in c.orderedConversations.where(
+                (chat) => chat.canPost,
+              ))
                 ListTile(
                   title: Text(chat.title),
                   onTap: () => Navigator.pop(context, chat),
@@ -1309,4 +1492,35 @@ Future<String?> _textDialog(
   // Dialog reverse transitions can still reference its controller in this frame.
   WidgetsBinding.instance.addPostFrameCallback((_) => input.dispose());
   return result;
+}
+
+class _ReadMarker extends StatefulWidget {
+  const _ReadMarker({
+    super.key,
+    required this.message,
+    required this.registry,
+    required this.child,
+  });
+  final ChatMessage message;
+  final Map<String, (ChatMessage, BuildContext)> registry;
+  final Widget child;
+
+  @override
+  State<_ReadMarker> createState() => _ReadMarkerState();
+}
+
+class _ReadMarkerState extends State<_ReadMarker> {
+  @override
+  Widget build(BuildContext context) {
+    widget.registry[widget.message.id] = (widget.message, context);
+    return widget.child;
+  }
+
+  @override
+  void dispose() {
+    if (identical(widget.registry[widget.message.id]?.$2, context)) {
+      widget.registry.remove(widget.message.id);
+    }
+    super.dispose();
+  }
 }

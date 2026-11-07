@@ -1001,4 +1001,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get downloadAndInstall => 'Download and install';
+
+  @override
+  String get pinChat => 'Pin chat';
+
+  @override
+  String get unpinChat => 'Unpin chat';
+
+  @override
+  String get pinnedChat => 'Pinned chat';
+
+  @override
+  String get mediaCacheTitle => 'Media cache';
+
+  @override
+  String get mediaCacheHint =>
+      'Files are stored encrypted. Older files are evicted when the limit is reached. Clearing the cache does not delete messages or files you saved manually.';
+
+  @override
+  String get mediaCacheError => 'Could not access or change the cache.';
+
+  @override
+  String mediaCacheUsed(Object amount) {
+    return 'Storage used: $amount MB';
+  }
+
+  @override
+  String get mediaCacheOff => 'Off';
+
+  @override
+  String mediaCacheLimit(Object amount) {
+    return '$amount GB';
+  }
+
+  @override
+  String get mediaCacheClear => 'Clear disk cache';
+
+  @override
+  String get loadNewerMessages => 'Load newer messages';
 }

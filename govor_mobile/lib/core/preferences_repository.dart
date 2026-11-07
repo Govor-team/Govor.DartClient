@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'media/media_cache.dart';
 import 'preferences_native.dart'
     if (dart.library.js_interop) 'preferences_web.dart'
     as platform;
@@ -17,8 +18,16 @@ abstract interface class VisualPreferencesRepository {
   Future<void> saveSidebarWidth(double value);
 }
 
+abstract interface class MediaPreferencesRepository {
+  Future<int> loadMediaCacheLimit();
+  Future<void> saveMediaCacheLimit(int limit);
+}
+
 class LocalPreferencesRepository
-    implements PreferencesRepository, VisualPreferencesRepository {
+    implements
+        PreferencesRepository,
+        VisualPreferencesRepository,
+        MediaPreferencesRepository {
   LocalPreferencesRepository({
     Future<String?> Function()? read,
     Future<void> Function(String)? write,
@@ -47,6 +56,18 @@ class LocalPreferencesRepository
     _writes = task.then<void>((_) {}, onError: (Object _, StackTrace _) {});
     return task;
   }
+
+  @override
+  Future<int> loadMediaCacheLimit() async {
+    final limit = (await _data())['mediaCacheGiB'];
+    return limit is int && mediaCacheLimits.contains(limit)
+        ? limit
+        : defaultMediaCacheGiB;
+  }
+
+  @override
+  Future<void> saveMediaCacheLimit(int limit) =>
+      _update('mediaCacheGiB', limit);
 
   @override
   Future<String?> loadLanguage() async {

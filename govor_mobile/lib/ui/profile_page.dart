@@ -1,3 +1,4 @@
+import 'media_cache_page.dart';
 import 'avatar_preview.dart';
 import 'font_size_selector.dart';
 import 'profile_tag_editor.dart';
@@ -383,6 +384,19 @@ class _ProfilePageState extends State<ProfilePage>
           onTap: () => MediaQuery.sizeOf(context).width >= 904
               ? controller.settings.select(SettingsSection.reactions)
               : openFeaturePage(context, c, ReactionPacksPage(controller: c)),
+        ),
+      ),
+      GlassCard(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        child: ListTile(
+          key: const Key('settings-media-cache'),
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.storage_rounded),
+          title: Text(context.l10n.mediaCacheTitle),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () =>
+              openFeaturePage(context, c, MediaCachePage(controller: c)),
         ),
       ),
       GlassCard(

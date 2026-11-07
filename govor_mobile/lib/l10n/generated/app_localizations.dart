@@ -1981,6 +1981,72 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Скачать и установить'**
   String get downloadAndInstall;
+
+  /// No description provided for @pinChat.
+  ///
+  /// In ru, this message translates to:
+  /// **'Закрепить чат'**
+  String get pinChat;
+
+  /// No description provided for @unpinChat.
+  ///
+  /// In ru, this message translates to:
+  /// **'Открепить чат'**
+  String get unpinChat;
+
+  /// No description provided for @pinnedChat.
+  ///
+  /// In ru, this message translates to:
+  /// **'Закреплённый чат'**
+  String get pinnedChat;
+
+  /// No description provided for @mediaCacheTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Кеш медиа'**
+  String get mediaCacheTitle;
+
+  /// No description provided for @mediaCacheHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Файлы хранятся в зашифрованном виде. Когда лимит достигнут, старые файлы удаляются из кеша. Очистка не удаляет сообщения и файлы, сохранённые вручную.'**
+  String get mediaCacheHint;
+
+  /// No description provided for @mediaCacheError.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось открыть или изменить кеш.'**
+  String get mediaCacheError;
+
+  /// No description provided for @mediaCacheUsed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Занято на диске: {amount} МБ'**
+  String mediaCacheUsed(Object amount);
+
+  /// No description provided for @mediaCacheOff.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выключен'**
+  String get mediaCacheOff;
+
+  /// No description provided for @mediaCacheLimit.
+  ///
+  /// In ru, this message translates to:
+  /// **'{amount} ГБ'**
+  String mediaCacheLimit(Object amount);
+
+  /// No description provided for @mediaCacheClear.
+  ///
+  /// In ru, this message translates to:
+  /// **'Очистить кеш на диске'**
+  String get mediaCacheClear;
+
+  /// No description provided for @loadNewerMessages.
+  ///
+  /// In ru, this message translates to:
+  /// **'Загрузить новые сообщения'**
+  String get loadNewerMessages;
 }
 
 class _AppLocalizationsDelegate

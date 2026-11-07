@@ -4,6 +4,7 @@ import '../crypto/e2ee_protocol.dart';
 import '../models.dart';
 import '../attachment_files.dart';
 import '../crypto/primitives.dart';
+import 'media_cache.dart';
 
 @immutable
 class Attachment {
@@ -64,11 +65,19 @@ abstract interface class AttachmentRepository {
   void clear();
 }
 
-/// Authenticated download -> verified decryption -> bounded session-only cache.
+/// Authenticated download -> verified decryption -> bounded session and encrypted disk caches.
 class EncryptedAttachmentRepository implements AttachmentRepository {
-  EncryptedAttachmentRepository(this.api, {this.maxCacheBytes = 38000000});
+  EncryptedAttachmentRepository(
+    this.api, {
+    this.maxCacheBytes = 38000000,
+    this.disk,
+  });
   final ApiClient api;
   final int maxCacheBytes;
+  final MediaCache? disk;
+
+  String _diskKey(String id) =>
+      hex(sha256(utf('${api.server.scope}/${api.tokens!.user}/$id')));
   final _cache = <(String, String), Uint8List>{};
   final _pending = <(String, String), Future<Uint8List>>{};
   int _bytes = 0, _generation = 0;
@@ -83,6 +92,33 @@ class EncryptedAttachmentRepository implements AttachmentRepository {
     return _pending.putIfAbsent(id, () async {
       final generation = _generation;
       try {
+        final cache = disk;
+        final diskKey = cache == null || api.tokens == null
+            ? null
+            : _diskKey(attachment.id);
+        final revision = cache?.revision;
+        if (diskKey != null) {
+          try {
+            final cached = await cache!.read(diskKey);
+            if (cached != null) {
+              final plaintext = (await compute(_decrypt, (
+                cached,
+                attachment.key,
+              ))).asUnmodifiableView();
+              if (generation != _generation) throw StateError('Session ended');
+              _remember(id, plaintext);
+              return plaintext;
+            }
+          } catch (_) {
+            if (generation != _generation) throw StateError('Session ended');
+            try {
+              await cache!.remove(diskKey);
+            } catch (_) {
+              /* Cache is optional. */
+            }
+          }
+        }
+        if (generation != _generation) throw StateError('Session ended');
         final data = await api.downloadAttachment(
           attachment.id,
           maxBytes: 20000000,
@@ -91,6 +127,14 @@ class EncryptedAttachmentRepository implements AttachmentRepository {
           data,
           attachment.key,
         ))).asUnmodifiableView();
+        if (generation != _generation) throw StateError('Session ended');
+        if (diskKey != null) {
+          try {
+            await cache!.write(diskKey, data, revision: revision!);
+          } catch (_) {
+            /* Cache is optional. */
+          }
+        }
         if (generation != _generation) throw StateError('Session ended');
         _remember(id, plaintext);
         return plaintext;
@@ -118,6 +162,7 @@ class EncryptedAttachmentRepository implements AttachmentRepository {
       'Неверный размер вложения.',
     );
     final generation = _generation;
+    final revision = disk?.revision;
     final sealed = await compute(_encrypt, bytes);
     if (generation != _generation) throw StateError('Session ended');
     final id = await api.uploadAttachment(sealed.data);
@@ -128,6 +173,14 @@ class EncryptedAttachmentRepository implements AttachmentRepository {
       name: safeFileName(name),
       mime: fileMime(bytes),
     );
+    if (disk != null && api.tokens != null) {
+      try {
+        await disk!.write(_diskKey(id), sealed.data, revision: revision!);
+      } catch (_) {
+        /* Cache is optional. */
+      }
+    }
+    if (generation != _generation) throw StateError('Session ended');
     _remember((id, sealed.key), Uint8List.fromList(bytes).asUnmodifiableView());
     return attachment;
   }

@@ -320,5 +320,16 @@
         "type": "String"
       }
     }
-  }
+  },
+  "pinChat": "Pin chat",
+  "unpinChat": "Unpin chat",
+  "pinnedChat": "Pinned chat",
+  "mediaCacheTitle": "Media cache",
+  "mediaCacheHint": "Files are stored encrypted. Older files are evicted when the limit is reached. Clearing the cache does not delete messages or files you saved manually.",
+  "mediaCacheError": "Could not access or change the cache.",
+  "mediaCacheUsed": "Storage used: {amount} MB",
+  "mediaCacheOff": "Off",
+  "mediaCacheLimit": "{amount} GB",
+  "mediaCacheClear": "Clear disk cache",
+  "loadNewerMessages": "Load newer messages"
 }

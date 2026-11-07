@@ -1003,4 +1003,42 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get downloadAndInstall => 'Скачать и установить';
+
+  @override
+  String get pinChat => 'Закрепить чат';
+
+  @override
+  String get unpinChat => 'Открепить чат';
+
+  @override
+  String get pinnedChat => 'Закреплённый чат';
+
+  @override
+  String get mediaCacheTitle => 'Кеш медиа';
+
+  @override
+  String get mediaCacheHint =>
+      'Файлы хранятся в зашифрованном виде. Когда лимит достигнут, старые файлы удаляются из кеша. Очистка не удаляет сообщения и файлы, сохранённые вручную.';
+
+  @override
+  String get mediaCacheError => 'Не удалось открыть или изменить кеш.';
+
+  @override
+  String mediaCacheUsed(Object amount) {
+    return 'Занято на диске: $amount МБ';
+  }
+
+  @override
+  String get mediaCacheOff => 'Выключен';
+
+  @override
+  String mediaCacheLimit(Object amount) {
+    return '$amount ГБ';
+  }
+
+  @override
+  String get mediaCacheClear => 'Очистить кеш на диске';
+
+  @override
+  String get loadNewerMessages => 'Загрузить новые сообщения';
 }

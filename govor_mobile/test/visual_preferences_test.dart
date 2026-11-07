@@ -95,4 +95,43 @@ void main() {
     expect(c.settings.state.sidebarWidth, greaterThan(92));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'contacts remain usable when resizing to portrait and changing tabs',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1200, 900);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      final c = MessengerController(store: MemorySecretStore())..startDemo();
+      addTearDown(c.dispose);
+
+      await tester.pumpWidget(GovorApp(controller: c));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Друзья и заявки'));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Вставить ID из буфера'), findsOneWidget);
+
+      tester.view.physicalSize = const Size(390, 844);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(
+        find.byTooltip('Вставить ID из буфера').hitTestable(),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('sidebar-divider')), findsNothing);
+
+      await tester.tap(find.text('Чаты'));
+      await tester.pumpAndSettle();
+      tester.view.physicalSize = const Size(320, 680);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Контакты'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.text('Входящие'));
+      await tester.pumpAndSettle();
+      expect(find.text('Заявок пока нет'), findsOneWidget);
+      expect(find.text('Чаты').hitTestable(), findsOneWidget);
+    },
+  );
 }
