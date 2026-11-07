@@ -74,6 +74,7 @@ class FlowAuth extends AuthService {
 class FlowHub extends ChatHub {
   FlowHub(super.api, String path) : super(path: path);
   bool stopped = false, failNextSend = false;
+  HubCommandFailure? nextSendRejection;
   final commands = <(String, List<Object?>)>[];
   @override
   Future<void> start() async {
@@ -91,6 +92,10 @@ class FlowHub extends ChatHub {
   Future<dynamic> invoke(String method, List<Object?> args) async {
     commands.add((method, args));
     if (method == 'Send') {
+      if (nextSendRejection case final rejection?) {
+        nextSendRejection = null;
+        throw rejection;
+      }
       if (failNextSend) {
         failNextSend = false;
         throw const ApiFailure(408, 'no acknowledgement');

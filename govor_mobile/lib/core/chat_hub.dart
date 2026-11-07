@@ -10,6 +10,60 @@ import 'socket_native.dart' if (dart.library.js_interop) 'socket_web.dart';
 
 enum ConnectionStatus { offline, connecting, connected, reconnecting }
 
+/// A business response from the server, distinct from a lost SignalR reply.
+class HubCommandFailure extends ApiFailure {
+  const HubCommandFailure._(super.status, super.message, this.sendRejected);
+
+  /// True only for documented checks that reject Send before saving a message.
+  final bool sendRejected;
+
+  factory HubCommandFailure.fromResult(
+    String method,
+    int status,
+    Object? error,
+  ) {
+    final reason = switch ((status, error)) {
+      (400, 'E2EE_DEVICES_CHANGED') =>
+        'Изменились устройства участников. Отправьте сообщение ещё раз с актуальными ключами.',
+      (400, 'E2EE_TIMESTAMP_OUT_OF_RANGE') =>
+        'Время устройства отличается от времени сервера больше чем на 5 минут. Включите автоматическую установку времени и отправьте сообщение снова.',
+      (400, 'E2EE routing, attachment or time context does not match.') =>
+        'Сервер отклонил параметры шифрования. Проверьте дату и время устройства, затем повторите отправку.',
+      (400, 'E2EE routing or attachment context does not match.') =>
+        'Сервер отклонил параметры шифрования чата, цитаты или вложений. Обновите чат и повторите отправку.',
+      (403, 'E2EE_SIGNING_DEVICE_REJECTED') =>
+        'Сервер не принимает ключ подписи этого устройства. Переподключитесь и проверьте состояние защиты переписки.',
+      (403, 'You do not have permission to perform this action.') =>
+        'Сервер запретил отправку (403). Проверьте доступ к чату и состояние устройства.',
+      (401, 'Session revoked or expired.') =>
+        'Сессия истекла или была отозвана (401). Переподключитесь к аккаунту.',
+      (400, 'Invalid E2EE envelope.') =>
+        'Сервер не смог проверить шифрование сообщения. Проверьте, что у вас актуальная версия клиента.',
+      (400, 'Reply must belong to the same chat.') =>
+        'Сообщение для ответа недоступно в этом чате. Обновите чат или уберите цитату.',
+      _ => null,
+    };
+    final message =
+        reason ??
+        switch (status) {
+          401 =>
+            'Сессия не подтверждена сервером (401). Проверьте подключение к аккаунту.',
+          403 =>
+            'Сервер запретил команду (403). Проверьте доступ к чату и состояние устройства.',
+          500 => 'Ошибка на сервере (500). Проверьте историю перед повтором.',
+          _ when status >= 400 && status <= 599 =>
+            'Сервер отклонил команду ($status). Обновите чат и повторите действие.',
+          _ =>
+            'Сервер вернул неожиданный ответ. Проверьте историю перед повтором.',
+        };
+    return HubCommandFailure._(
+      status,
+      message,
+      method == 'Send' && reason != null,
+    );
+  }
+}
+
 /// SignalR JSON v1 over negotiated WebSocket. Bounded frames, invocation deadlines,
 /// keepalive, reconnect and an explicit resync callback; no plaintext fallback.
 class ChatHub {
@@ -190,11 +244,10 @@ class ChatHub {
         await pending.future.timeout(const Duration(seconds: 25)),
       );
       if (![200, 201, 204].contains(result['status'])) {
-        throw ApiFailure(
-          result['status'] as int? ?? 0,
-          result['errorMessage'] == 'E2EE_DEVICES_CHANGED'
-              ? 'Изменились устройства участников. Обновите чат и отправьте сообщение заново.'
-              : 'Команда не выполнена. Обновите чат и повторите действие.',
+        throw HubCommandFailure.fromResult(
+          method,
+          result['status'] is int ? result['status'] as int : 0,
+          result['errorMessage'],
         );
       }
       return result['result'];

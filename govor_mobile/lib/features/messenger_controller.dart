@@ -705,6 +705,7 @@ class MessengerController extends ChangeNotifier {
         return true;
       }
       var pending = _pending[chat.key];
+      final firstAttempt = pending == null;
       if (pending != null &&
           (pending.text != text.trim() ||
               pending.reply != replyTo ||
@@ -726,6 +727,7 @@ class MessengerController extends ChangeNotifier {
           replyTo: replyTo,
           attachments: preparedFiles,
         );
+        if (generation != _generation) return false;
         pending = PendingSend(
           id,
           text.trim(),
@@ -736,21 +738,35 @@ class MessengerController extends ChangeNotifier {
         );
         _pending[chat.key] = pending;
       }
-      final value = object(
-        await hub!.invoke('Send', [
-          {
-            'recipientId': chat.id,
-            'recipientType': chat.type,
-            'encryptedContent': pending.envelope,
-            'replyToMessageId': pending.reply,
-            'forwardedFromMessageId': pending.forwardedFrom,
-            'mediaAttachments': [
-              for (final a in pending.attachments)
-                {'mediaId': field(a, 'mediaId'), 'encryptedKey': ''},
-            ],
-          },
-        ]),
-      );
+      final Json value;
+      try {
+        value = object(
+          await hub!.invoke('Send', [
+            {
+              'recipientId': chat.id,
+              'recipientType': chat.type,
+              'encryptedContent': pending.envelope,
+              'replyToMessageId': pending.reply,
+              'forwardedFromMessageId': pending.forwardedFrom,
+              'mediaAttachments': [
+                for (final a in pending.attachments)
+                  {'mediaId': field(a, 'mediaId'), 'encryptedKey': ''},
+              ],
+            },
+          ]),
+        );
+      } on HubCommandFailure catch (failure) {
+        // Only a known rejection of the first attempt lets us issue a new ID.
+        // A previous attempt without a reply may still have been saved.
+        if (failure.sendRejected &&
+            firstAttempt &&
+            generation == _generation &&
+            identical(_pending[chat.key], pending)) {
+          _pending.remove(chat.key);
+        }
+        rethrow;
+      }
+      if (generation != _generation) return false;
       final response = ChatMessage.fromJson(value);
       requireCrypto(
         response.id == pending.id &&
@@ -1089,6 +1105,7 @@ class MessengerController extends ChangeNotifier {
     api = null;
     encryption = null;
     ready = false;
+    sending = false;
     demo = false;
     needsRecovery = false;
     selected = null;
@@ -1134,6 +1151,7 @@ class MessengerController extends ChangeNotifier {
     if (appInfo == null) unawaited(loadAppInfo());
     _generation++;
     _selection++;
+    sending = false;
     unawaited(_disconnect());
     api?.close();
     api = null;

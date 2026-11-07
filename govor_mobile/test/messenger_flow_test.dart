@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart' hide group;
 import 'package:http/http.dart' as http;
 import 'package:govor_mobile/core/api_client.dart';
+import 'package:govor_mobile/core/chat_hub.dart';
 import 'package:govor_mobile/core/models.dart';
 import 'package:govor_mobile/features/messenger_controller.dart';
 import 'support/auth_fixtures.dart' show testUser;
@@ -203,6 +204,65 @@ void main() {
       );
     },
   );
+  test(
+    'explicit pre-save rejection releases the draft for a newly encrypted send',
+    () async {
+      final f = FlowFixture();
+      addTearDown(f.controller.dispose);
+      await f.boot();
+      final conversation = f.controller.conversations.first;
+      await f.controller.open(conversation);
+      final hub = f.hubs['/hubs/chats']!;
+      f.controller.drafts[conversation.key] = 'reply';
+      final quoted = f.message('original')['id'] as String;
+      hub.nextSendRejection = HubCommandFailure.fromResult(
+        'Send',
+        400,
+        'E2EE_DEVICES_CHANGED',
+      );
+
+      expect(await f.controller.send('reply', replyTo: quoted), isFalse);
+      expect(f.controller.error, contains('актуальными ключами'));
+      expect(f.controller.pending, isNull);
+      expect(f.controller.drafts[conversation.key], 'reply');
+      expect(await f.controller.send('reply', replyTo: quoted), isTrue);
+      expect(f.encryption.encryptions, 2);
+      final first = object(
+        hub.commands.where((c) => c.$1 == 'Send').first.$2.single,
+      );
+      expect(
+        f.controller.messages.single.id,
+        isNot(object(jsonDecode(first['encryptedContent'] as String))['id']),
+      );
+      expect(f.controller.messages.single.replyTo, quoted);
+    },
+  );
+
+  test(
+    'rejection on a retry after lost acknowledgement cannot create a second ID',
+    () async {
+      final f = FlowFixture();
+      addTearDown(f.controller.dispose);
+      await f.boot();
+      await f.controller.open(f.controller.conversations.first);
+      final hub = f.hubs['/hubs/chats']!;
+      hub.failNextSend = true;
+      expect(await f.controller.send('reply'), isFalse);
+      final pending = f.controller.pending!;
+      hub.nextSendRejection = HubCommandFailure.fromResult(
+        'Send',
+        400,
+        'E2EE_TIMESTAMP_OUT_OF_RANGE',
+      );
+      expect(await f.controller.send('reply'), isFalse);
+      expect(f.controller.pending, same(pending));
+      expect(f.controller.error, contains('5 минут'));
+      expect(await f.controller.send('reply'), isTrue);
+      expect(f.controller.messages.single.id, pending.id);
+      expect(f.encryption.encryptions, 1);
+    },
+  );
+
   test(
     'history rejects wrong-chat data and preserves signature failures as unreadable',
     () async {

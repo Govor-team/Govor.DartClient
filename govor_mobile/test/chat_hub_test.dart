@@ -18,6 +18,7 @@ void main() {
       final sockets = <WebSocket>[];
       final commands = <Json>[];
       var connects = 0, resyncs = 0;
+      ({int status, String error})? rejection;
       final event = Completer<String>(), reconnected = Completer<void>();
       final handler = server.listen((request) async {
         expect(request.headers.value('authorization'), startsWith('Bearer '));
@@ -73,9 +74,9 @@ void main() {
                   'type': 3,
                   'invocationId': message['invocationId'],
                   'result': {
-                    'status': message['target'] == 'Denied' ? 403 : 201,
+                    'status': rejection?.status ?? (message['target'] == 'Denied' ? 403 : 201),
                     'result': {'sent': true},
-                    'errorMessage': null,
+                    'errorMessage': rejection?.error,
                   },
                 })}\x1e',
               );
@@ -126,6 +127,37 @@ void main() {
         {'encryptedContent': 'test-envelope'},
       ]);
       await expectLater(hub.invoke('Denied', []), throwsA(isA<ApiFailure>()));
+      rejection = (status: 400, error: 'E2EE_DEVICES_CHANGED');
+      await expectLater(
+        hub.invoke('Send', []),
+        throwsA(
+          isA<HubCommandFailure>()
+              .having((e) => e.sendRejected, 'known pre-save rejection', true)
+              .having(
+                (e) => e.message,
+                'guidance',
+                contains('актуальными ключами'),
+              ),
+        ),
+      );
+      rejection = (status: 500, error: 'internal detail');
+      await expectLater(
+        hub.invoke('Send', []),
+        throwsA(
+          isA<HubCommandFailure>()
+              .having(
+                (e) => e.sendRejected,
+                'unknown persistence outcome',
+                false,
+              )
+              .having(
+                (e) => e.message,
+                'sanitized message',
+                allOf(contains('500'), isNot(contains('internal detail'))),
+              ),
+        ),
+      );
+      rejection = null;
       await sockets.first.close();
       await reconnected.future.timeout(const Duration(seconds: 8));
       expect(resyncs, 1);
