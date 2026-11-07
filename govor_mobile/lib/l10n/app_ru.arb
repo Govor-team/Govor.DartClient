@@ -1077,5 +1077,19 @@
   "couldNotCreateInvitation": "Не удалось создать ссылку. Проверьте соединение и права доступа.",
   "removeAvatar": "Удалить аватарку",
   "groupAvatarHint": "PNG, JPEG или WebP · до 2 МиБ · до 2048 px",
-  "unlimitedInvitations": "Без лимита"
+  "unlimitedInvitations": "Без лимита",
+  "glassEffect": "Стеклянный эффект: прозрачность и размытие",
+  "visualSaveFailed": "Не удалось сохранить оформление. Попробуйте ещё раз.",
+  "resizeSidebar": "Изменить ширину списка чатов",
+  "updateAvailable": "Доступна новая версия {version}",
+  "updateFailed": "Не удалось обновить. Проверьте сеть и разрешение на установку.",
+  "downloadingUpdate": "Загрузка…",
+  "downloadAndInstall": "Скачать и установить",
+  "@updateAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  }
 }

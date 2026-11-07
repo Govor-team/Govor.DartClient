@@ -10,7 +10,15 @@ abstract interface class PreferencesRepository {
   Future<void> saveFontSize(double fontSize);
 }
 
-class LocalPreferencesRepository implements PreferencesRepository {
+abstract interface class VisualPreferencesRepository {
+  Future<double> loadGlassIntensity();
+  Future<void> saveGlassIntensity(double value);
+  Future<double> loadSidebarWidth();
+  Future<void> saveSidebarWidth(double value);
+}
+
+class LocalPreferencesRepository
+    implements PreferencesRepository, VisualPreferencesRepository {
   LocalPreferencesRepository({
     Future<String?> Function()? read,
     Future<void> Function(String)? write,
@@ -63,4 +71,27 @@ class LocalPreferencesRepository implements PreferencesRepository {
     }
     return _update('fontSize', fontSize);
   }
+
+  Future<double> _number(
+    String key,
+    double fallback,
+    double min,
+    double max,
+  ) async {
+    final value = (await _data())[key];
+    return value is num && value.isFinite && value >= min && value <= max
+        ? value.toDouble()
+        : fallback;
+  }
+
+  @override
+  Future<double> loadGlassIntensity() => _number('glassIntensity', .5, 0, 1);
+  @override
+  Future<void> saveGlassIntensity(double value) =>
+      _update('glassIntensity', value.clamp(0, 1));
+  @override
+  Future<double> loadSidebarWidth() => _number('sidebarWidth', 330, 92, 600);
+  @override
+  Future<void> saveSidebarWidth(double value) =>
+      _update('sidebarWidth', value.clamp(92, 600));
 }

@@ -1939,6 +1939,48 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Без лимита'**
   String get unlimitedInvitations;
+
+  /// No description provided for @glassEffect.
+  ///
+  /// In ru, this message translates to:
+  /// **'Стеклянный эффект: прозрачность и размытие'**
+  String get glassEffect;
+
+  /// No description provided for @visualSaveFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось сохранить оформление. Попробуйте ещё раз.'**
+  String get visualSaveFailed;
+
+  /// No description provided for @resizeSidebar.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить ширину списка чатов'**
+  String get resizeSidebar;
+
+  /// No description provided for @updateAvailable.
+  ///
+  /// In ru, this message translates to:
+  /// **'Доступна новая версия {version}'**
+  String updateAvailable(String version);
+
+  /// No description provided for @updateFailed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось обновить. Проверьте сеть и разрешение на установку.'**
+  String get updateFailed;
+
+  /// No description provided for @downloadingUpdate.
+  ///
+  /// In ru, this message translates to:
+  /// **'Загрузка…'**
+  String get downloadingUpdate;
+
+  /// No description provided for @downloadAndInstall.
+  ///
+  /// In ru, this message translates to:
+  /// **'Скачать и установить'**
+  String get downloadAndInstall;
 }
 
 class _AppLocalizationsDelegate

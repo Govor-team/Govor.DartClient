@@ -306,5 +306,19 @@
   "couldNotCreateInvitation": "Could not create link. Check your connection and permissions.",
   "removeAvatar": "Remove avatar",
   "groupAvatarHint": "PNG, JPEG or WebP · up to 2 MiB · up to 2048 px",
-  "unlimitedInvitations": "Unlimited"
+  "unlimitedInvitations": "Unlimited",
+  "glassEffect": "Glass effect: opacity and blur",
+  "visualSaveFailed": "Could not save appearance. Please try again.",
+  "resizeSidebar": "Resize chat list",
+  "updateAvailable": "New version {version} is available",
+  "updateFailed": "Update failed. Check your connection and installation permission.",
+  "downloadingUpdate": "Downloading…",
+  "downloadAndInstall": "Download and install",
+  "@updateAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  }
 }

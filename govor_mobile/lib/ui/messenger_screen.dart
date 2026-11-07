@@ -1,4 +1,7 @@
 import 'avatar_preview.dart';
+import 'update_banner.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../features/settings/settings_cubit.dart';
 import 'user_badge.dart';
 import 'attachment_gallery.dart';
 import '../l10n/l10n.dart';
@@ -42,6 +45,7 @@ class _MessengerScreenState extends State<MessengerScreen> {
   final Set<String> _selectedIds = {};
   int _filter = 1;
   int _homeTab = 0;
+  bool _compact = false;
   bool _searchingChats = false;
   bool _searchingMessages = false;
   bool _messageActionsOpen = false;
@@ -130,46 +134,81 @@ class _MessengerScreenState extends State<MessengerScreen> {
       _reply = null;
     }
     _pendingId = c.pending?.id;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final wide = constraints.maxWidth >= 820;
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.all(wide ? 16 : 8),
-            child: Column(
-              children: [
-                if (c.demo)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: _demoBanner(),
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      bloc: c.settings,
+      builder: (context, settings) => LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= 820;
+          final maxSidebar = (constraints.maxWidth - 440).clamp(92.0, 600.0);
+          final sidebarWidth = settings.sidebarWidth.clamp(92.0, maxSidebar);
+          _compact = wide && sidebarWidth < 180;
+          return SafeArea(
+            child: Padding(
+              padding: EdgeInsets.all(wide ? 16 : 8),
+              child: Column(
+                children: [
+                  const UpdateBanner(),
+                  if (c.demo)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _demoBanner(),
+                    ),
+                  Expanded(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (wide) ...[_rail(), const SizedBox(width: 12)],
+                        if (wide || c.selected == null)
+                          SizedBox(
+                            width: wide
+                                ? sidebarWidth
+                                : constraints.maxWidth - 16,
+                            child: _home(wide),
+                          ),
+                        if (wide)
+                          Semantics(
+                            label: context.l10n.resizeSidebar,
+                            child: MouseRegion(
+                              cursor: SystemMouseCursors.resizeLeftRight,
+                              child: GestureDetector(
+                                key: const Key('sidebar-divider'),
+                                behavior: HitTestBehavior.opaque,
+                                onHorizontalDragUpdate: (details) =>
+                                    c.settings.setSidebarWidth(
+                                      (sidebarWidth + details.delta.dx).clamp(
+                                        92.0,
+                                        maxSidebar,
+                                      ),
+                                    ),
+                                onHorizontalDragEnd: (_) =>
+                                    c.settings.setSidebarWidth(
+                                      c.settings.state.sidebarWidth,
+                                      save: true,
+                                    ),
+                                onHorizontalDragCancel: () =>
+                                    c.settings.setSidebarWidth(
+                                      c.settings.state.sidebarWidth,
+                                      save: true,
+                                    ),
+                                child: const SizedBox(width: 12),
+                              ),
+                            ),
+                          ),
+                        if (wide || c.selected != null)
+                          Expanded(
+                            child: c.selected == null
+                                ? _emptyChat()
+                                : _chat(wide),
+                          ),
+                      ],
+                    ),
                   ),
-                Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (wide) ...[_rail(), const SizedBox(width: 12)],
-                      if (wide || c.selected == null)
-                        SizedBox(
-                          width: wide
-                              ? (constraints.maxWidth >= 1100 ? 330 : 290)
-                              : constraints.maxWidth - 16,
-                          child: _home(wide),
-                        ),
-                      if (wide) const SizedBox(width: 12),
-                      if (wide || c.selected != null)
-                        Expanded(
-                          child: c.selected == null
-                              ? _emptyChat()
-                              : _chat(wide),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -234,7 +273,11 @@ class _MessengerScreenState extends State<MessengerScreen> {
     ),
   );
   Widget _home(bool wide) {
-    final body = _homeTab == 0 ? _chatList(wide) : ContactsPane(controller: c);
+    final body = _compact
+        ? _compactChats()
+        : _homeTab == 0
+        ? _chatList(wide)
+        : ContactsPane(controller: c);
     return Column(
       children: [
         if (!wide && _homeTab == 0)
@@ -336,6 +379,65 @@ class _MessengerScreenState extends State<MessengerScreen> {
       ],
     );
   }
+
+  Widget _compactChats() => Column(
+    children: [
+      IconButton(
+        tooltip: context.l10n.friends,
+        onPressed: () => setState(() => _filter = 1),
+        icon: Icon(Icons.person_outline, color: _filter == 1 ? accent : muted),
+      ),
+      IconButton(
+        tooltip: context.l10n.groups,
+        onPressed: () => setState(() => _filter = 2),
+        icon: Icon(Icons.group_outlined, color: _filter == 2 ? accent : muted),
+      ),
+      Expanded(
+        child: ListView(
+          children: [
+            for (final chat in c.conversations.where(
+              (chat) => chat.type == _filter - 1,
+            ))
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Tooltip(
+                  message: chat.title,
+                  child: InkWell(
+                    onTap: () => c.open(chat),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: c.selected?.key == chat.key
+                            ? primary.withValues(alpha: .19)
+                            : null,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          Center(
+                            child: PreviewAvatar(
+                              chat.title,
+                              controller: c,
+                              imageId: chat.iconId,
+                              size: 48,
+                              online: chat.online,
+                              group: chat.type == 1,
+                            ),
+                          ),
+                          if ((c.unread[chat.key] ?? 0) > 0) const Badge(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    ],
+  );
 
   Widget _chatList(bool wide) {
     final query = _search.text.toLowerCase().trim();

@@ -205,6 +205,21 @@ class _ProfilePageState extends State<ProfilePage>
     ];
     final appearance = <Widget>[
       FontSizeSelector(settings: controller.settings),
+      GlassCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(context.l10n.glassEffect),
+            Slider(
+              key: const Key('glass-intensity'),
+              value: settings.glassIntensity,
+              onChanged: controller.settings.previewGlass,
+              onChangeEnd: controller.settings.saveGlass,
+            ),
+            if (settings.visualFailed) Text(context.l10n.visualSaveFailed),
+          ],
+        ),
+      ),
       WallpaperPicker(controller: c, onAction: run, disabled: working),
       const SizedBox(height: 12),
     ];

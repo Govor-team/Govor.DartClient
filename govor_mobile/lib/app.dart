@@ -83,7 +83,10 @@ class _GovorAppState extends State<GovorApp> with WidgetsBindingObserver {
                     settings.fontSize / SettingsCubit.defaultFontSize,
                   ),
                 ),
-                child: child!,
+                child: GlassStyle(
+                  intensity: settings.glassIntensity,
+                  child: child!,
+                ),
               ),
               home: LiquidBackground(
                 wallpaper: controller.wallpaper,

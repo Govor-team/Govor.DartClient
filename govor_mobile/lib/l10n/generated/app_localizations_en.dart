@@ -977,4 +977,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unlimitedInvitations => 'Unlimited';
+
+  @override
+  String get glassEffect => 'Glass effect: opacity and blur';
+
+  @override
+  String get visualSaveFailed => 'Could not save appearance. Please try again.';
+
+  @override
+  String get resizeSidebar => 'Resize chat list';
+
+  @override
+  String updateAvailable(String version) {
+    return 'New version $version is available';
+  }
+
+  @override
+  String get updateFailed =>
+      'Update failed. Check your connection and installation permission.';
+
+  @override
+  String get downloadingUpdate => 'Downloading…';
+
+  @override
+  String get downloadAndInstall => 'Download and install';
 }

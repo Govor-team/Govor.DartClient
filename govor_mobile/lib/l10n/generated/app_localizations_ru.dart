@@ -978,4 +978,29 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get unlimitedInvitations => 'Без лимита';
+
+  @override
+  String get glassEffect => 'Стеклянный эффект: прозрачность и размытие';
+
+  @override
+  String get visualSaveFailed =>
+      'Не удалось сохранить оформление. Попробуйте ещё раз.';
+
+  @override
+  String get resizeSidebar => 'Изменить ширину списка чатов';
+
+  @override
+  String updateAvailable(String version) {
+    return 'Доступна новая версия $version';
+  }
+
+  @override
+  String get updateFailed =>
+      'Не удалось обновить. Проверьте сеть и разрешение на установку.';
+
+  @override
+  String get downloadingUpdate => 'Загрузка…';
+
+  @override
+  String get downloadAndInstall => 'Скачать и установить';
 }

@@ -91,6 +91,16 @@ ThemeData govorTheme(Brightness brightness, {double fontSize = 14}) {
   );
 }
 
+class GlassStyle extends InheritedWidget {
+  const GlassStyle({super.key, required this.intensity, required super.child});
+  final double intensity;
+  static double of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<GlassStyle>()?.intensity ?? .5;
+  @override
+  bool updateShouldNotify(GlassStyle oldWidget) =>
+      intensity != oldWidget.intensity;
+}
+
 class Glass extends StatelessWidget {
   const Glass({
     super.key,
@@ -110,15 +120,18 @@ class Glass extends StatelessWidget {
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final accessible = MediaQuery.highContrastOf(context) || !blur;
+    final intensity = GlassStyle.of(context);
+    final opacity = dark ? .08 + intensity * .54 : .28 + intensity * .72;
+    final color = tint ?? (dark ? const Color(0xFF191C29) : Colors.white);
     final panel = DecoratedBox(
       decoration: BoxDecoration(
-        color:
-            tint ??
-            (dark
-                ? const Color(
-                    0xFF191C29,
-                  ).withValues(alpha: accessible ? 1 : .35)
-                : Colors.white.withValues(alpha: accessible ? 1 : .64)),
+        color: color.withValues(
+          alpha: accessible
+              ? 1
+              : (tint == null
+                    ? opacity
+                    : (color.a * opacity / (dark ? .35 : .64)).clamp(0, 1)),
+        ),
         borderRadius: BorderRadius.circular(radius),
         border: border
             ? Border.all(
@@ -137,14 +150,20 @@ class Glass extends StatelessWidget {
                 ],
               ),
       ),
-      child: Padding(padding: padding, child: child),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Padding(padding: padding, child: child),
+      ),
     );
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: accessible
           ? panel
           : BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+              filter: ImageFilter.blur(
+                sigmaX: intensity * 44,
+                sigmaY: intensity * 44,
+              ),
               child: panel,
             ),
     );
